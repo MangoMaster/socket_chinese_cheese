@@ -2,35 +2,7 @@
 #define CHEESE_MODEL_H_
 
 #include <QtCore/QObject>
-#include <vector>
-#include <array>
-#include <memory>
-
-enum CheeseColor
-{
-    red,
-    black
-};
-enum CheeseKind
-{
-    che,
-    ma,
-    pao,
-    xiang,
-    shi,
-    shuai,
-    bing
-};
-
-struct Cheese
-{
-    Cheese(CheeseColor color, CheeseKind kind, uint8_t x, uint8_t y, bool alive = true);
-    CheeseColor color;
-    CheeseKind kind;
-    uint8_t x;
-    uint8_t y;
-    bool alive;
-};
+#include <cheese.h>
 
 class CheeseModel : public QObject
 {
@@ -41,7 +13,7 @@ class CheeseModel : public QObject
     ~CheeseModel();
 
   signals:
-    void modelChanged(std::array<std::array<Cheese *, 9>, 10> changedCheese);
+    void modelChanged(const std::array<std::array<Cheese *, 9>, 10> &changedCheese);
     void modelChanged(std::vector<const Cheese *> changedCheese);
 
   public slots:

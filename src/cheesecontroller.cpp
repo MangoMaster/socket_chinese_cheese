@@ -15,4 +15,6 @@ void CheeseController::control()
     // mainWindow & model
     QObject::connect(this->mainWindow->ui->action_New, SIGNAL(triggered(bool)), this->model, SLOT(setNewModel()));
 
+    // scene & model
+    QObject::connect(this->model, SIGNAL(modelChanged(const std::array<std::array<Cheese *, 9>, 10> &)), this->scene, SLOT(receiveModel(const std::array<std::array<Cheese *, 9>, 10> &)));
 }

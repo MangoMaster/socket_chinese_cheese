@@ -1,10 +1,5 @@
 #include "cheesemodel.h"
 
-Cheese::Cheese(CheeseColor color, CheeseKind kind, uint8_t x, uint8_t y, bool alive)
-    : color(color), kind(kind), x(x), y(y), alive(alive)
-{
-}
-
 CheeseModel::CheeseModel(QObject *parent)
     : QObject(parent)
 {
@@ -58,5 +53,5 @@ void CheeseModel::setNewModel()
     cheeseTable[6][6] = new Cheese(CheeseColor::red, CheeseKind::bing, 6, 6);
     cheeseTable[6][8] = new Cheese(CheeseColor::red, CheeseKind::bing, 6, 8);
 
-    
+    emit modelChanged(this->cheeseTable);
 }

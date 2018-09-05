@@ -1,0 +1,19 @@
+<RCC>
+  <qresource prefix="icons">
+    <file alias="background.png">../icons/background.png</file>
+    <file alias="black_bing.png">../icons/black_bing.png</file>
+    <file alias="black_xiang.png">../icons/black_xiang.png</file>
+    <file alias="red_bing.png">../icons/red_bing.png</file>
+    <file alias="black_che.png">../icons/black_che.png</file>
+    <file alias="black_ma.png">../icons/black_ma.png</file>
+    <file alias="red_che.png">../icons/red_che.png</file>
+    <file alias="red_ma.png">../icons/red_ma.png</file>
+    <file alias="black_pao.png">../icons/black_pao.png</file>
+    <file alias="black_shi.png">../icons/black_shi.png</file>
+    <file alias="red_pao.png">../icons/red_pao.png</file>
+    <file alias="red_shi.png">../icons/red_shi.png</file>
+    <file alias="black_shuai.png">../icons/black_shuai.png</file>
+    <file alias="red_shuai.png">../icons/red_shuai.png</file>
+    <file alias="red_xiang.png">../icons/red_xiang.png</file>
+  </qresource>
+</RCC>
