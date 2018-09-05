@@ -43,7 +43,7 @@
      </layout>
     </item>
     <item>
-     <widget class="QGraphicsView" name="graphicsView"/>
+     <widget class="CheeseView" name="graphicsView"/>
     </item>
     <item>
      <widget class="QSlider" name="verticalSlider">
@@ -102,6 +102,13 @@
    </property>
   </action>
  </widget>
+ <customwidgets>
+  <customwidget>
+   <class>CheeseView</class>
+   <extends>QGraphicsView</extends>
+   <header>cheeseview.h</header>
+  </customwidget>
+ </customwidgets>
  <resources/>
  <connections/>
 </ui>

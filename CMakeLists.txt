@@ -13,9 +13,10 @@ set(CMAKE_AUTOUIC ON)
 find_package(Qt5Widgets CONFIG REQUIRED)
 
 include_directories(/usr/include/x86_64-linux-gnu/qt5)
+include_directories(./src)
 
 # Populate a CMake variable with the sources
-set(MAIN_SRCS main.cpp src/mainwindow.cpp src/mainwindow.ui)
+set(MAIN_SRCS main.cpp src/mainwindow.cpp src/mainwindow.ui src/cheeseview.cpp src/cheesecontroller.cpp src/cheesescene.cpp src/cheesemodel.cpp)
 # Tell CMake to create the cheese executable
 add_executable(cheese ${MAIN_SRCS})
 # Use the Widgets module from Qt 5

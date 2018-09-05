@@ -14,10 +14,10 @@ class MainWindow : public QMainWindow
 public:
     explicit MainWindow(QWidget *parent = nullptr);
     ~MainWindow();
+    friend class CheeseController;
 
 private:
     Ui::MainWindow *ui;
-
 };
 
 #endif // MAINWINDOW_H_
