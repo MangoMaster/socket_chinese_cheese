@@ -16,6 +16,7 @@ public:
 signals:
   void modelChanged(const std::array<std::array<Cheese *, 9>, 10> &changedCheese);
   void modelChanged(CheesePoint startCheesePoint, CheesePoint endCheesePoint);
+  void nextStep(CheeseColor nextStepColor);
 
 public slots:
   void setNewModel();
@@ -23,7 +24,8 @@ public slots:
   void receiveMousePress(); // clear chosen point
 
 private:
-  CheeseColor color;
+  CheeseColor myColor;
+  CheeseColor currentStepColor;
   std::array<std::array<Cheese *, 9>, 10> cheeseTable;
   CheesePoint cheeseChosenPoint; // -1 -> not exist
   QSet<CheesePoint> cheeseNextPoint;
@@ -31,6 +33,15 @@ private:
   void chooseCheese(const CheesePoint &cheesePoint);
   void clearChosenCheese();
   void chooseCheeseNextPoint(const CheesePoint &cheesePoint);
+
+  static const CheesePoint MA_POINT_DELTA[8];
+  static const CheesePoint MA_BIE_POINT_DELTA[8];
+  static const CheesePoint XIANG_POINT_DELTA[4];
+  static const CheesePoint XIANG_BIE_POINT_DELTA[4];
+  static const CheesePoint SHI_POINT_DELTA[4];
+  static const CheesePoint SHUAI_POINT_DELTA[4];
+  static const CheesePoint BING_RED_POINT_DELTA[3];
+  static const CheesePoint BING_BLACK_POINT_DELTA[3];
 };
 
 #endif // CHEESE_MODEL_H_

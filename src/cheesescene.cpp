@@ -110,8 +110,18 @@ void CheeseScene::receiveModel(const std::array<std::array<Cheese *, 9>, 10> &ch
 
 void CheeseScene::receiveModel(CheesePoint startCheesePoint, CheesePoint endCheesePoint)
 {
-    cheesePixmapTable[endCheesePoint.row][endCheesePoint.column]->setPixmap(cheesePixmapTable[startCheesePoint.row][startCheesePoint.column]->pixmap());
-    cheesePixmapTable[startCheesePoint.row][startCheesePoint.column]->setPixmap(QPixmap());
+    // reverse scene
+    switch (this->color)
+    {
+    case CheeseColor::red:
+        cheesePixmapTable[endCheesePoint.row][endCheesePoint.column]->setPixmap(cheesePixmapTable[startCheesePoint.row][startCheesePoint.column]->pixmap());
+        cheesePixmapTable[startCheesePoint.row][startCheesePoint.column]->setPixmap(QPixmap());
+        break;
+    case CheeseColor::black:
+        cheesePixmapTable[9 - endCheesePoint.row][8 - endCheesePoint.column]->setPixmap(cheesePixmapTable[9 - startCheesePoint.row][8 - startCheesePoint.column]->pixmap());
+        cheesePixmapTable[9 - startCheesePoint.row][8 - startCheesePoint.column]->setPixmap(QPixmap());
+        break;
+    }
 }
 
 void CheeseScene::mousePressEvent(QGraphicsSceneMouseEvent *event)
@@ -123,9 +133,19 @@ void CheeseScene::mousePressEvent(QGraphicsSceneMouseEvent *event)
         {
             int row = (scenePoint.y() - 80 / 2) / 80;
             int column = (scenePoint.x() - 80 / 2) / 80;
-            emit mousePressed(CheesePoint(row, column));
+
+            // reverse scene
+            switch (this->color)
+            {
+            case CheeseColor::red:
+                emit mousePressed(CheesePoint(row, column));
+                break;
+            case CheeseColor::black:
+                emit mousePressed(CheesePoint(9 - row, 8 - column));
+                break;
+            }
         }
-        else
+        else // invalid mouse press
             emit mousePressed();
     }
     QGraphicsScene::mousePressEvent(event);
