@@ -1,5 +1,5 @@
-#ifndef MAINWINDOW_H_
-#define MAINWINDOW_H_
+#ifndef MAIN_WINDOW_H_
+#define MAIN_WINDOW_H_
 
 #include <QtWidgets/QMainWindow>
 
@@ -20,4 +20,4 @@ private:
     Ui::MainWindow *ui;
 };
 
-#endif // MAINWINDOW_H_
+#endif // MAIN_WINDOW_H_

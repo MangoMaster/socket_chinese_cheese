@@ -3,6 +3,8 @@
 
 #include <QtCore/QObject>
 #include <QtCore/QSet>
+#include <QtNetwork/QTcpServer>
+#include <QtNetwork/QTcpSocket>
 #include <cheese.h>
 
 class CheeseModel : public QObject
@@ -24,6 +26,8 @@ public slots:
   void receiveMousePress(); // clear chosen point
 
 private:
+  bool gaming;  // 游戏中
+  QString mode; // 游戏模式
   CheeseColor myCheeseColor;
   CheeseColor currentStepColor;
   std::array<std::array<Cheese *, 9>, 10> cheeseTable;
@@ -42,6 +46,11 @@ private:
   static const CheesePoint SHUAI_POINT_DELTA[4];
   static const CheesePoint BING_RED_POINT_DELTA[3];
   static const CheesePoint BING_BLACK_POINT_DELTA[3];
+
+  QTcpServer *server = nullptr;
+  QTcpSocket *socket = nullptr;
+
+  void startTcpServer(const QString &ip, const QString &port);
 };
 
 #endif // CHEESE_MODEL_H_

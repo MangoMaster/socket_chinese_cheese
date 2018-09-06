@@ -1,5 +1,9 @@
 #include "cheesemodel.h"
+#include "modedialog.h"
+#include "ui_modedialog.h"
+#include <QtWidgets/QInputDialog>
 #include <cassert>
+#include <QtCore/QDebug>
 
 const CheesePoint CheeseModel::MA_POINT_DELTA[8] = {CheesePoint(-2, 1), CheesePoint(-1, 2), CheesePoint(1, 2), CheesePoint(2, 1), CheesePoint(2, -1), CheesePoint(1, -2), CheesePoint(-1, -2), CheesePoint(-2, -1)};
 const CheesePoint CheeseModel::MA_BIE_POINT_DELTA[8] = {CheesePoint(-1, 0), CheesePoint(0, 1), CheesePoint(0, 1), CheesePoint(1, 0), CheesePoint(1, 0), CheesePoint(0, -1), CheesePoint(0, -1), CheesePoint(-1, 0)};
@@ -27,6 +31,50 @@ CheeseModel::~CheeseModel()
 
 void CheeseModel::setNewModel()
 {
+    // set mode
+    QStringList modes;
+    modes << tr("单人模式") << tr("单机对战模式") << tr("联机对战模式");
+    bool ok;
+    this->mode = QInputDialog::getItem(nullptr, tr("对战模式"), tr("选择对战模式"), modes, 1, false, &ok);
+    if (!ok)
+        return;
+    if (this->mode == tr("单机对战模式"))
+    {
+        ModeDialog dialog;
+        dialog.ui->spinBox_2->setValue(127);
+        dialog.ui->spinBox_2->setReadOnly(true);
+        dialog.ui->spinBox_3->setValue(0);
+        dialog.ui->spinBox_3->setReadOnly(true);
+        dialog.ui->spinBox_4->setValue(0);
+        dialog.ui->spinBox_4->setReadOnly(true);
+        dialog.ui->spinBox_5->setValue(1);
+        dialog.ui->spinBox_5->setReadOnly(true);
+        if (dialog.exec() == QDialog::Accepted)
+        {
+            dialog.ui->spinBox->value();
+        }
+        else
+            return;
+    }
+    else if (this->mode == tr("联机对战模式"))
+    {
+        ModeDialog dialog;
+        dialog.ui->spinBox_2->setValue(192);
+        dialog.ui->spinBox_3->setValue(168);
+        dialog.ui->spinBox_4->setValue(0);
+        dialog.ui->spinBox_5->setValue(1);
+        if (dialog.exec() == QDialog::Accepted)
+        {
+            dialog.ui->spinBox->value();
+        }
+        else
+            return;
+    }
+
+    // set gaming
+    this->gaming = true;
+
+    // set color
     this->myCheeseColor = CheeseColor::red;
     this->currentStepColor = CheeseColor::red;
 
