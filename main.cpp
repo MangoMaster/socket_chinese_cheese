@@ -12,6 +12,6 @@ int main(int argc, char *argv[])
     CheeseModel m;
     CheeseController c(&w, &s, &m);
     w.show();
-
+    
     return app.exec();
 }

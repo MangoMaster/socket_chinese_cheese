@@ -74,16 +74,19 @@
     <property name="title">
      <string>&amp;Join</string>
     </property>
+    <addaction name="action_Join"/>
    </widget>
    <widget class="QMenu" name="menu_Exit">
     <property name="title">
      <string>&amp;Exit</string>
     </property>
+    <addaction name="action_Exit"/>
    </widget>
    <widget class="QMenu" name="menu_Save">
     <property name="title">
      <string>&amp;Save</string>
     </property>
+    <addaction name="action_Save"/>
    </widget>
    <addaction name="menu_Create"/>
    <addaction name="menu_Join"/>
@@ -102,6 +105,30 @@
   <action name="action_Pieces">
    <property name="text">
     <string>&amp;Pieces</string>
+   </property>
+  </action>
+  <action name="action_Join">
+   <property name="text">
+    <string>&amp;Join</string>
+   </property>
+   <property name="shortcut">
+    <string>Ctrl+J</string>
+   </property>
+  </action>
+  <action name="action_Save">
+   <property name="text">
+    <string>&amp;Save</string>
+   </property>
+   <property name="shortcut">
+    <string>Ctrl+S</string>
+   </property>
+  </action>
+  <action name="action_Exit">
+   <property name="text">
+    <string>&amp;Exit</string>
+   </property>
+   <property name="shortcut">
+    <string>Ctrl+Q</string>
    </property>
   </action>
  </widget>

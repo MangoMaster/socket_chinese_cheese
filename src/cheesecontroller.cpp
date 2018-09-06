@@ -14,9 +14,14 @@ void CheeseController::control()
 
     // mainWindow & model
     QObject::connect(this->mainWindow->ui->action_New, SIGNAL(triggered(bool)), this->model, SLOT(setNewModel()));
+    QObject::connect(this->mainWindow->ui->action_Join, SIGNAL(triggered(bool)), this->model, SLOT(setJoinModel()));
+    QObject::connect(this->mainWindow->ui->action_Pieces, SIGNAL(triggered(bool)), this->model, SLOT(setPiecesModel()));
+    QObject::connect(this->mainWindow->ui->action_Save, SIGNAL(triggered(bool)), this->model, SLOT(saveModel()));
+    QObject::connect(this->mainWindow->ui->action_Exit, SIGNAL(triggered(bool)), qApp, SLOT(quit()));
 
     // scene & model
-    QObject::connect(this->model, SIGNAL(modelChanged(const std::array<std::array<Cheese *, 9>, 10> &, CheeseColor)), this->scene, SLOT(receiveModel(const std::array<std::array<Cheese *, 9>, 10> &, CheeseColor)));
+    QObject::connect(this->model, SIGNAL(modelChanged(const std::array<std::array<Cheese *, 9>, 10> &, CheeseColor)),
+                     this->scene, SLOT(receiveModel(const std::array<std::array<Cheese *, 9>, 10> &, CheeseColor)));
     QObject::connect(this->model, SIGNAL(modelChanged(CheesePoint, CheesePoint)), this->scene, SLOT(receiveModel(CheesePoint, CheesePoint)));
     QObject::connect(this->scene, SIGNAL(mousePressed(CheesePoint)), this->model, SLOT(receiveMousePress(CheesePoint)));
     QObject::connect(this->scene, SIGNAL(mousePressed()), this->model, SLOT(receiveMousePress()));

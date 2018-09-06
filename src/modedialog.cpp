@@ -2,7 +2,7 @@
 #include "ui_modedialog.h"
 
 ModeDialog::ModeDialog(QWidget *parent)
-    : QDialog(parent)
+    : QDialog(parent), ui(new Ui::ModeDialog)
 {
     ui->setupUi(this);
 }

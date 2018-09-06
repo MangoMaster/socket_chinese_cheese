@@ -2,6 +2,7 @@
 #include "modedialog.h"
 #include "ui_modedialog.h"
 #include <QtWidgets/QInputDialog>
+#include <QtNetwork/QNetworkInterface>
 #include <cassert>
 #include <QtCore/QDebug>
 
@@ -38,8 +39,11 @@ void CheeseModel::setNewModel()
     this->mode = QInputDialog::getItem(nullptr, tr("对战模式"), tr("选择对战模式"), modes, 1, false, &ok);
     if (!ok)
         return;
+
+    // set network
     if (this->mode == tr("单机对战模式"))
     {
+        this->mode = tr("对战模式");
         ModeDialog dialog;
         dialog.ui->spinBox_2->setValue(127);
         dialog.ui->spinBox_2->setReadOnly(true);
@@ -51,21 +55,48 @@ void CheeseModel::setNewModel()
         dialog.ui->spinBox_5->setReadOnly(true);
         if (dialog.exec() == QDialog::Accepted)
         {
-            dialog.ui->spinBox->value();
+            this->connection = new CheeseTcpConnection();
+            bool success = this->connection->initTcpServer(static_cast<uint16_t>(dialog.ui->spinBox->value()));
+            if (!success)
+            {
+                delete this->connection;
+                this->connection = nullptr;
+                return;
+            }
+            this->connectToConnection();
         }
         else
             return;
     }
     else if (this->mode == tr("联机对战模式"))
     {
+        this->mode = tr("对战模式");
+        QString address;
+        for (QHostAddress add : QNetworkInterface::allAddresses())
+            if (add.protocol() == QAbstractSocket::IPv4Protocol)
+                address = add.toString();
+        QStringList addressParts = address.split('.');
+
         ModeDialog dialog;
-        dialog.ui->spinBox_2->setValue(192);
-        dialog.ui->spinBox_3->setValue(168);
-        dialog.ui->spinBox_4->setValue(0);
-        dialog.ui->spinBox_5->setValue(1);
+        dialog.ui->spinBox_2->setValue(addressParts[0].toInt());
+        dialog.ui->spinBox_2->setReadOnly(true);
+        dialog.ui->spinBox_3->setValue(addressParts[1].toInt());
+        dialog.ui->spinBox_3->setReadOnly(true);
+        dialog.ui->spinBox_4->setValue(addressParts[2].toInt());
+        dialog.ui->spinBox_4->setReadOnly(true);
+        dialog.ui->spinBox_5->setValue(addressParts[3].toInt());
+        dialog.ui->spinBox_5->setReadOnly(true);
         if (dialog.exec() == QDialog::Accepted)
         {
-            dialog.ui->spinBox->value();
+            this->connection = new CheeseTcpConnection();
+            bool success = this->connection->initTcpServer(static_cast<uint16_t>(dialog.ui->spinBox->value()));
+            if (!success)
+            {
+                delete this->connection;
+                this->connection = nullptr;
+                return;
+            }
+            this->connectToConnection();
         }
         else
             return;
@@ -115,30 +146,63 @@ void CheeseModel::setNewModel()
     cheeseTable[6][8] = new Cheese(CheeseColor::red, CheeseKind::bing, 6, 8);
 
     emit modelChanged(this->cheeseTable, this->myCheeseColor);
+    emit readySend(this->cheeseTable, this->currentStepColor);
+    emit colorChanged(this->currentStepColor);
+}
+
+void CheeseModel::setPiecesModel()
+{
+}
+
+void CheeseModel::setJoinModel()
+{
+    // set mode
+    this->mode = tr("对战模式");
+
+    // set network
+    ModeDialog dialog;
+    dialog.ui->spinBox_2->setValue(127);
+    dialog.ui->spinBox_3->setValue(0);
+    dialog.ui->spinBox_4->setValue(0);
+    dialog.ui->spinBox_5->setValue(1);
+    dialog.ui->spinBox->setValue(50000);
+    if (dialog.exec() == QDialog::Accepted)
+    {
+        this->connection = new CheeseTcpConnection();
+        QString address = QString::number(dialog.ui->spinBox_2->value()) + '.' + QString::number(dialog.ui->spinBox_3->value()) + '.' + QString::number(dialog.ui->spinBox_4->value()) + '.' + QString::number(dialog.ui->spinBox_5->value());
+        bool success = this->connection->initTcpClient(address, static_cast<uint16_t>(dialog.ui->spinBox->value()));
+        if (!success)
+        {
+            delete this->connection;
+            this->connection = nullptr;
+            return;
+        }
+        this->connectToConnection();
+    }
+    else
+        return;
+
+    // set gaming
+    this->gaming = true;
+
+    // set color
+    this->myCheeseColor = CheeseColor::black;
 }
 
 void CheeseModel::receiveMousePress(CheesePoint cheesePoint)
 {
     assert(cheesePoint.row >= 0 && cheesePoint.row <= 9 && cheesePoint.column >= 0 && cheesePoint.column <= 8);
+    if (this->mode == tr("对战模式"))
+        if (myCheeseColor != currentStepColor)
+            return;
     if (this->cheeseChosenPoint.row != -1)         // There has been a chosen cheese
         if (cheeseNextPoint.contains(cheesePoint)) // Can go to cheesePoint
         {
             // Chosen cheese go to cheesePoint
-            delete cheeseTable[cheesePoint.row][cheesePoint.column];
-            cheeseTable[cheesePoint.row][cheesePoint.column] = cheeseTable[this->cheeseChosenPoint.row][this->cheeseChosenPoint.column];
-            cheeseTable[this->cheeseChosenPoint.row][this->cheeseChosenPoint.column] = nullptr;
-            emit modelChanged(this->cheeseChosenPoint, cheesePoint);
+            this->goCheese(this->cheeseChosenPoint, cheesePoint);
+            emit readySend(this->cheeseChosenPoint, cheesePoint);
             // next step
-            switch (this->currentStepColor)
-            {
-            case CheeseColor::red:
-                this->currentStepColor = CheeseColor::black;
-                break;
-            case CheeseColor::black:
-                this->currentStepColor = CheeseColor::red;
-                break;
-            }
-            emit nextStep(this->currentStepColor);
+            this->enterNextStep();
             // Clear chosen cheese
             this->clearChosenCheese();
         }
@@ -164,6 +228,22 @@ void CheeseModel::receiveMousePress() // clear chosen point
 {
     // cheesePoint not OK
     this->clearChosenCheese();
+}
+
+void CheeseModel::receiveRecv(std::array<std::array<Cheese *, 9>, 10> changedCheese, CheeseColor currentColor)
+{
+    this->cheeseTable = changedCheese;
+    this->currentStepColor = currentColor;
+    emit modelChanged(this->cheeseTable, this->myCheeseColor);
+    emit colorChanged(this->currentStepColor);
+}
+
+void CheeseModel::receiveRecv(CheesePoint startCheesePoint, CheesePoint endCheesePoint)
+{
+    // go cheese
+    this->goCheese(startCheesePoint, endCheesePoint);
+    // next step
+    this->enterNextStep();
 }
 
 void CheeseModel::chooseCheese(const CheesePoint &cheesePoint)
@@ -439,4 +519,37 @@ void CheeseModel::chooseCheeseNextPoint(const CheesePoint &cheesePoint)
         }
         break;
     }
+}
+
+void CheeseModel::goCheese(CheesePoint startCheesePoint, CheesePoint endCheesePoint)
+{
+    delete cheeseTable[endCheesePoint.row][endCheesePoint.column];
+    cheeseTable[endCheesePoint.row][endCheesePoint.column] = cheeseTable[startCheesePoint.row][startCheesePoint.column];
+    cheeseTable[startCheesePoint.row][startCheesePoint.column] = nullptr;
+    emit modelChanged(startCheesePoint, endCheesePoint);
+}
+
+void CheeseModel::enterNextStep()
+{
+    switch (this->currentStepColor)
+    {
+    case CheeseColor::red:
+        this->currentStepColor = CheeseColor::black;
+        break;
+    case CheeseColor::black:
+        this->currentStepColor = CheeseColor::red;
+        break;
+    }
+    emit colorChanged(this->currentStepColor);
+}
+
+void CheeseModel::connectToConnection()
+{
+    // model & connection
+    QObject::connect(this, SIGNAL(readySend(const std::array<std::array<Cheese *, 9>, 10> &, CheeseColor)),
+                     this->connection, SLOT(send(const std::array<std::array<Cheese *, 9>, 10> &, CheeseColor)));
+    QObject::connect(this, SIGNAL(readySend(CheesePoint, CheesePoint)), this->connection, SLOT(send(CheesePoint, CheesePoint)));
+    QObject::connect(this->connection, SIGNAL(recvChanged(std::array<std::array<Cheese *, 9>, 10>, CheeseColor)),
+                     this, SLOT(receiveRecv(std::array<std::array<Cheese *, 9>, 10>, CheeseColor)));
+    QObject::connect(this->connection, SIGNAL(recvChanged(CheesePoint, CheesePoint)), this, SLOT(receiveRecv(CheesePoint, CheesePoint)));
 }
