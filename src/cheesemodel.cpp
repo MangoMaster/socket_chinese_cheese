@@ -1,7 +1,8 @@
 #include "cheesemodel.h"
+#include <cassert>
 
-CheeseModel::CheeseModel(QObject *parent)
-    : QObject(parent)
+CheeseModel::CheeseModel(CheeseColor color, QObject *parent)
+    : QObject(parent), color(color), cheeseChosenPoint(-1, -1)
 {
     for (auto &cheeseArray : this->cheeseTable)
         for (auto &cheese : cheeseArray)
@@ -54,4 +55,60 @@ void CheeseModel::setNewModel()
     cheeseTable[6][8] = new Cheese(CheeseColor::red, CheeseKind::bing, 6, 8);
 
     emit modelChanged(this->cheeseTable);
+}
+
+void CheeseModel::receiveMousePress(CheesePoint cheesePoint)
+{
+    assert(cheesePoint.row >= 0 && cheesePoint.row <= 9 && cheesePoint.column >= 0 && cheesePoint.column <= 8);
+    if (this->cheeseChosenPoint.row != -1)         // There has been a chosen cheese
+        if (cheeseNextPoint.contains(cheesePoint)) // Can go to cheesePoint
+        {
+            // Chosen cheese go to cheesePoint
+            delete cheeseTable[cheesePoint.row][cheesePoint.column];
+            cheeseTable[cheesePoint.row][cheesePoint.column] = cheeseTable[this->cheeseChosenPoint.row][this->cheeseChosenPoint.column];
+            cheeseTable[this->cheeseChosenPoint.row][this->cheeseChosenPoint.column] = nullptr;
+            emit modelChanged(this->cheeseChosenPoint, cheesePoint);
+            // Clear chosen cheese
+            this->clearChosenCheese();
+        }
+        else // Cannot go to cheesePoint
+        {
+            if (cheeseTable[cheesePoint.row][cheesePoint.column] != nullptr) // There is a cheese at cheesePoint
+                this->chooseCheese(cheesePoint);
+            else // There is not a cheese at cheesePoint
+                this->clearChosenCheese();
+        }
+    else // There has not been a chosen cheese
+    {
+        if (cheeseTable[cheesePoint.row][cheesePoint.column] != nullptr) // There is a cheese at cheesePoint
+            this->chooseCheese(cheesePoint);
+    }
+}
+
+void CheeseModel::receiveMousePress()
+{
+    // cheesePoint not OK
+    this->clearChosenCheese();
+}
+
+void CheeseModel::chooseCheese(const CheesePoint &cheesePoint)
+{
+    // Chose cheese at cheesePoint
+    this->cheeseChosenPoint = cheesePoint;
+    this->chooseCheeseNextPoint(cheesePoint);
+}
+
+void CheeseModel::clearChosenCheese()
+{
+    // Clear chosen cheese
+    this->cheeseChosenPoint.row = this->cheeseChosenPoint.column = -1;
+    this->cheeseNextPoint.clear();
+}
+
+void CheeseModel::chooseCheeseNextPoint(const CheesePoint &cheesePoint)
+{
+    // TODO: add rules
+    for (int i = 0; i < 10; ++i)
+        for (int j = 0; j < 9; ++j)
+            this->cheeseNextPoint.insert(CheesePoint(i, j));
 }

@@ -1,5 +1,7 @@
 #include "cheesescene.h"
 #include <QtWidgets/QGraphicsItem>
+#include <QtWidgets/QGraphicsSceneMouseEvent>
+#include <cmath>
 #include <QtCore/QDebug>
 
 CheeseScene::CheeseScene(CheeseColor color, QObject *parent)
@@ -44,10 +46,7 @@ void CheeseScene::receiveModel(const std::array<std::array<Cheese *, 9>, 10> &ch
             if (cheese == nullptr)
             {
                 if (!cheesePixmapTable[i][j]->pixmap().isNull())
-                {
-                    delete this->cheesePixmapTable[i][j];
-                    this->cheesePixmapTable[i][j] = new CheesePixmap();
-                }
+                    this->cheesePixmapTable[i][j]->setPixmap(QPixmap());
                 continue;
             }
 
@@ -107,4 +106,27 @@ void CheeseScene::receiveModel(const std::array<std::array<Cheese *, 9>, 10> &ch
                 break;
             }
         }
+}
+
+void CheeseScene::receiveModel(CheesePoint startCheesePoint, CheesePoint endCheesePoint)
+{
+    cheesePixmapTable[endCheesePoint.row][endCheesePoint.column]->setPixmap(cheesePixmapTable[startCheesePoint.row][startCheesePoint.column]->pixmap());
+    cheesePixmapTable[startCheesePoint.row][startCheesePoint.column]->setPixmap(QPixmap());
+}
+
+void CheeseScene::mousePressEvent(QGraphicsSceneMouseEvent *event)
+{
+    if (event->button() == Qt::LeftButton)
+    {
+        QPointF scenePoint = event->scenePos();
+        if (scenePoint.x() >= 80 / 2 && scenePoint.x() < 80 / 2 + 9 * 80 && scenePoint.y() >= 80 / 2 && scenePoint.y() < 80 / 2 + 10 * 80)
+        {
+            int row = (scenePoint.y() - 80 / 2) / 80;
+            int column = (scenePoint.x() - 80 / 2) / 80;
+            emit mousePressed(CheesePoint(row, column));
+        }
+        else
+            emit mousePressed();
+    }
+    QGraphicsScene::mousePressEvent(event);
 }

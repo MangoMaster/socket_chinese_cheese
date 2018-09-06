@@ -23,8 +23,16 @@ public:
   CheeseScene(CheeseColor color, QObject *parent = nullptr);
   ~CheeseScene();
 
+signals:
+  void mousePressed(); // invalid mouse press
+  void mousePressed(CheesePoint cheesePoint);
+
 public slots:
   void receiveModel(const std::array<std::array<Cheese *, 9>, 10> &changedCheese);
+  void receiveModel(CheesePoint startCheesePoint, CheesePoint endCheesePoint);
+
+protected:
+  void mousePressEvent(QGraphicsSceneMouseEvent *event) override;
 
 private:
   CheeseColor color;
