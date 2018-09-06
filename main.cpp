@@ -8,8 +8,8 @@ int main(int argc, char *argv[])
 {
     QApplication app(argc, argv);
     MainWindow w;
-    CheeseScene s(CheeseColor::black);
-    CheeseModel m(CheeseColor::black);
+    CheeseScene s;
+    CheeseModel m;
     CheeseController c(&w, &s, &m);
     w.show();
 

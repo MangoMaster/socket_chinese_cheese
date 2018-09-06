@@ -10,12 +10,12 @@ class CheeseModel : public QObject
   Q_OBJECT
 
 public:
-  CheeseModel(CheeseColor color, QObject *parent = nullptr);
+  CheeseModel(QObject *parent = nullptr);
   ~CheeseModel();
 
 signals:
-  void modelChanged(const std::array<std::array<Cheese *, 9>, 10> &changedCheese);
-  void modelChanged(CheesePoint startCheesePoint, CheesePoint endCheesePoint);
+  void modelChanged(const std::array<std::array<Cheese *, 9>, 10> &changedCheese, CheeseColor color); // start model
+  void modelChanged(CheesePoint startCheesePoint, CheesePoint endCheesePoint);                        // change model
   void nextStep(CheeseColor nextStepColor);
 
 public slots:
@@ -24,7 +24,7 @@ public slots:
   void receiveMousePress(); // clear chosen point
 
 private:
-  CheeseColor myColor;
+  CheeseColor myCheeseColor;
   CheeseColor currentStepColor;
   std::array<std::array<Cheese *, 9>, 10> cheeseTable;
   CheesePoint cheeseChosenPoint; // -1 -> not exist

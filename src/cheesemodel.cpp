@@ -10,10 +10,9 @@ const CheesePoint CheeseModel::SHUAI_POINT_DELTA[4] = {CheesePoint(-1, 0), Chees
 const CheesePoint CheeseModel::BING_RED_POINT_DELTA[3] = {CheesePoint(-1, 0), CheesePoint(0, -1), CheesePoint(0, 1)};
 const CheesePoint CheeseModel::BING_BLACK_POINT_DELTA[3] = {CheesePoint(1, 0), CheesePoint(0, -1), CheesePoint(0, 1)};
 
-CheeseModel::CheeseModel(CheeseColor color, QObject *parent)
-    : QObject(parent), myColor(color), cheeseChosenPoint(-1, -1)
+CheeseModel::CheeseModel(QObject *parent)
+    : QObject(parent), cheeseChosenPoint(-1, -1)
 {
-    this->currentStepColor = CheeseColor::red;
     for (auto &cheeseArray : this->cheeseTable)
         for (auto &cheese : cheeseArray)
             cheese = nullptr;
@@ -28,6 +27,9 @@ CheeseModel::~CheeseModel()
 
 void CheeseModel::setNewModel()
 {
+    this->myCheeseColor = CheeseColor::red;
+    this->currentStepColor = CheeseColor::red;
+
     // black
     cheeseTable[0][0] = new Cheese(CheeseColor::black, CheeseKind::che, 0, 0);
     cheeseTable[0][1] = new Cheese(CheeseColor::black, CheeseKind::ma, 0, 1);
@@ -64,7 +66,7 @@ void CheeseModel::setNewModel()
     cheeseTable[6][6] = new Cheese(CheeseColor::red, CheeseKind::bing, 6, 6);
     cheeseTable[6][8] = new Cheese(CheeseColor::red, CheeseKind::bing, 6, 8);
 
-    emit modelChanged(this->cheeseTable);
+    emit modelChanged(this->cheeseTable, this->myCheeseColor);
 }
 
 void CheeseModel::receiveMousePress(CheesePoint cheesePoint)

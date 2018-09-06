@@ -4,8 +4,8 @@
 #include <cmath>
 #include <QtCore/QDebug>
 
-CheeseScene::CheeseScene(CheeseColor color, QObject *parent)
-    : QGraphicsScene(parent), color(color)
+CheeseScene::CheeseScene(QObject *parent)
+    : QGraphicsScene(parent)
 {
     QPixmap background = QPixmap(":/icons/background.png").scaled(800, 1200, Qt::KeepAspectRatio);
     this->addItem(new QGraphicsPixmapItem(background));
@@ -25,14 +25,16 @@ CheeseScene::~CheeseScene()
             delete cheesePixmap;
 }
 
-void CheeseScene::receiveModel(const std::array<std::array<Cheese *, 9>, 10> &changedCheese)
+void CheeseScene::receiveModel(const std::array<std::array<Cheese *, 9>, 10> &changedCheese, CheeseColor color)
 {
+    this->myCheeseColor = color;
+
     for (int i = 0; i < 10; ++i)
         for (int j = 0; j < 9; ++j)
         {
             Cheese *cheese;
             // reverse scene
-            switch (this->color)
+            switch (this->myCheeseColor)
             {
             case CheeseColor::red:
                 cheese = changedCheese[i][j];
@@ -111,7 +113,7 @@ void CheeseScene::receiveModel(const std::array<std::array<Cheese *, 9>, 10> &ch
 void CheeseScene::receiveModel(CheesePoint startCheesePoint, CheesePoint endCheesePoint)
 {
     // reverse scene
-    switch (this->color)
+    switch (this->myCheeseColor)
     {
     case CheeseColor::red:
         cheesePixmapTable[endCheesePoint.row][endCheesePoint.column]->setPixmap(cheesePixmapTable[startCheesePoint.row][startCheesePoint.column]->pixmap());
@@ -135,7 +137,7 @@ void CheeseScene::mousePressEvent(QGraphicsSceneMouseEvent *event)
             int column = (scenePoint.x() - 80 / 2) / 80;
 
             // reverse scene
-            switch (this->color)
+            switch (this->myCheeseColor)
             {
             case CheeseColor::red:
                 emit mousePressed(CheesePoint(row, column));
