@@ -15,6 +15,11 @@ MainWindow::~MainWindow()
     delete ui;
 }
 
+void MainWindow::timerStart()
+{
+    this->end = false;
+}
+
 void MainWindow::timerStop()
 {
     t.stop();

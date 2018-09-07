@@ -22,6 +22,7 @@ signals:
   void timerTimeout();
 
 public slots:
+  void timerStart();
   void timerStop();
   void timerZero();
   void timerSingalTimeOut();

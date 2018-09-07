@@ -48,7 +48,7 @@ void CheeseModel::setNewModel()
     if (!ok)
         return;
 
-    // set network
+    // set networkd
     if (this->mode == tr("单机对战模式"))
     {
         this->mode = tr("对战模式");
@@ -63,6 +63,8 @@ void CheeseModel::setNewModel()
         dialog.ui->spinBox_5->setReadOnly(true);
         if (dialog.exec() == QDialog::Accepted)
         {
+            delete this->connection;
+            this->connection = nullptr;
             this->connection = new CheeseTcpConnection();
             bool success = this->connection->initTcpServer(static_cast<uint16_t>(dialog.ui->spinBox->value()));
             if (!success)
@@ -96,6 +98,8 @@ void CheeseModel::setNewModel()
         dialog.ui->spinBox_5->setReadOnly(true);
         if (dialog.exec() == QDialog::Accepted)
         {
+            delete this->connection;
+            this->connection = nullptr;
             this->connection = new CheeseTcpConnection();
             bool success = this->connection->initTcpServer(static_cast<uint16_t>(dialog.ui->spinBox->value()));
             if (!success)
@@ -128,6 +132,7 @@ void CheeseModel::setNewModel()
             delete cheese;
             cheese = nullptr;
         }
+
     // black
     cheeseTable[0][0] = new Cheese(CheeseColor::black, CheeseKind::che, 0, 0);
     cheeseTable[0][1] = new Cheese(CheeseColor::black, CheeseKind::ma, 0, 1);
@@ -372,6 +377,8 @@ void CheeseModel::setPiecesModel()
         dialog.ui->spinBox_5->setReadOnly(true);
         if (dialog.exec() == QDialog::Accepted)
         {
+            delete this->connection;
+            this->connection = nullptr;
             this->connection = new CheeseTcpConnection();
             bool success = this->connection->initTcpServer(static_cast<uint16_t>(dialog.ui->spinBox->value()));
             if (!success)
@@ -405,6 +412,8 @@ void CheeseModel::setPiecesModel()
         dialog.ui->spinBox_5->setReadOnly(true);
         if (dialog.exec() == QDialog::Accepted)
         {
+            delete this->connection;
+            this->connection = nullptr;
             this->connection = new CheeseTcpConnection();
             bool success = this->connection->initTcpServer(static_cast<uint16_t>(dialog.ui->spinBox->value()));
             if (!success)
@@ -448,6 +457,8 @@ void CheeseModel::setJoinModel()
     dialog.ui->spinBox->setValue(50000);
     if (dialog.exec() == QDialog::Accepted)
     {
+        delete this->connection;
+        this->connection = nullptr;
         this->connection = new CheeseTcpConnection();
         QString address = QString::number(dialog.ui->spinBox_2->value()) + '.' + QString::number(dialog.ui->spinBox_3->value()) + '.' + QString::number(dialog.ui->spinBox_4->value()) + '.' + QString::number(dialog.ui->spinBox_5->value());
         bool success = this->connection->initTcpClient(address, static_cast<uint16_t>(dialog.ui->spinBox->value()));
