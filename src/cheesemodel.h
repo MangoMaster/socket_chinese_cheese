@@ -27,6 +27,7 @@ public slots:
   void setNewModel();
   void setPiecesModel();
   void setJoinModel();
+  void saveModel();
   void receiveMousePress(CheesePoint cheesePoint);
   void receiveMousePress(); // clear chosen point
   void receiveRecv(std::array<std::array<Cheese *, 9>, 10> changedCheese, CheeseColor currentColor);

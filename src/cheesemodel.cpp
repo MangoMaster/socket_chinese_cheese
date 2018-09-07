@@ -2,6 +2,8 @@
 #include "modedialog.h"
 #include "ui_modedialog.h"
 #include <QtWidgets/QInputDialog>
+#include <QtWidgets/QFileDialog>
+#include <QtWidgets/QMessageBox>
 #include <QtNetwork/QNetworkInterface>
 #include <cassert>
 #include <QtCore/QDebug>
@@ -109,6 +111,11 @@ void CheeseModel::setNewModel()
     this->myCheeseColor = CheeseColor::red;
     this->currentStepColor = CheeseColor::red;
 
+    // set cheese
+    for (auto &cheeseArray : this->cheeseTable)
+        for (auto &cheese : cheeseArray)
+            cheese = nullptr;
+
     // black
     cheeseTable[0][0] = new Cheese(CheeseColor::black, CheeseKind::che, 0, 0);
     cheeseTable[0][1] = new Cheese(CheeseColor::black, CheeseKind::ma, 0, 1);
@@ -152,6 +159,260 @@ void CheeseModel::setNewModel()
 
 void CheeseModel::setPiecesModel()
 {
+    // set cheese
+    for (auto &cheeseArray : this->cheeseTable)
+        for (auto &cheese : cheeseArray)
+            cheese = nullptr;
+
+    QString fileName = QFileDialog::getOpenFileName(nullptr, tr("打开残局文件"), ".", tr("文本文件 (*.txt)"));
+    if (fileName.isEmpty())
+        return;
+    QFile file(fileName);
+    if (!file.open(QIODevice::ReadOnly | QFile::Text))
+    {
+        QMessageBox::warning(nullptr, tr("Error"), tr("Cannot open file: ") + file.errorString());
+        return;
+    }
+
+    // coodinate transform & cheesKind order transform
+    QTextStream in(&file);
+    QString colorString = in.readLine();
+    if (colorString == "red") // 红方先手
+    {
+        for (int i = 0; i < 7; ++i)
+        {
+            QString tempBuffer = in.readLine();
+            int cheeseNumber = QString(tempBuffer[0]).toInt();
+            int x, y;
+            for (int j = 0; j < cheeseNumber; ++j)
+            {
+                x = QString(tempBuffer[3 + 6 * j]).toInt();
+                y = QString(tempBuffer[5 + 6 * j]).toInt();
+                switch (i)
+                {
+                case 0:
+                    this->cheeseTable[9 - y][x] = new Cheese(CheeseColor::red, CheeseKind::shuai, 9 - y, x);
+                    break;
+                case 1:
+                    this->cheeseTable[9 - y][x] = new Cheese(CheeseColor::red, CheeseKind::shi, 9 - y, x);
+                    break;
+                case 2:
+                    this->cheeseTable[9 - y][x] = new Cheese(CheeseColor::red, CheeseKind::xiang, 9 - y, x);
+                    break;
+                case 3:
+                    this->cheeseTable[9 - y][x] = new Cheese(CheeseColor::red, CheeseKind::ma, 9 - y, x);
+                    break;
+                case 4:
+                    this->cheeseTable[9 - y][x] = new Cheese(CheeseColor::red, CheeseKind::che, 9 - y, x);
+                    break;
+                case 5:
+                    this->cheeseTable[9 - y][x] = new Cheese(CheeseColor::red, CheeseKind::pao, 9 - y, x);
+                    break;
+                case 6:
+                    this->cheeseTable[9 - y][x] = new Cheese(CheeseColor::red, CheeseKind::bing, 9 - y, x);
+                    break;
+                }
+            }
+        }
+
+        in.readLine(); // waste
+        for (int i = 7; i < 14; ++i)
+        {
+            QString tempBuffer = in.readLine();
+            int cheeseNumber = QString(tempBuffer[0]).toInt();
+            int x, y;
+            for (int j = 0; j < cheeseNumber; ++j)
+            {
+                x = QString(tempBuffer[3 + 6 * j]).toInt();
+                y = QString(tempBuffer[5 + 6 * j]).toInt();
+                switch (i)
+                {
+                case 7:
+                    this->cheeseTable[9 - y][x] = new Cheese(CheeseColor::black, CheeseKind::shuai, 9 - y, x);
+                    break;
+                case 8:
+                    this->cheeseTable[9 - y][x] = new Cheese(CheeseColor::black, CheeseKind::shi, 9 - y, x);
+                    break;
+                case 9:
+                    this->cheeseTable[9 - y][x] = new Cheese(CheeseColor::black, CheeseKind::xiang, 9 - y, x);
+                    break;
+                case 10:
+                    this->cheeseTable[9 - y][x] = new Cheese(CheeseColor::black, CheeseKind::ma, 9 - y, x);
+                    break;
+                case 11:
+                    this->cheeseTable[9 - y][x] = new Cheese(CheeseColor::black, CheeseKind::che, 9 - y, x);
+                    break;
+                case 12:
+                    this->cheeseTable[9 - y][x] = new Cheese(CheeseColor::black, CheeseKind::pao, 9 - y, x);
+                    break;
+                case 13:
+                    this->cheeseTable[9 - y][x] = new Cheese(CheeseColor::black, CheeseKind::bing, 9 - y, x);
+                    break;
+                }
+            }
+        }
+    }
+    else // 黑方先手
+    {
+        for (int i = 0; i < 7; ++i)
+        {
+            QString tempBuffer = in.readLine();
+            int cheeseNumber = QString(tempBuffer[0]).toInt();
+            int x, y;
+            for (int j = 0; j < cheeseNumber; ++j)
+            {
+                x = QString(tempBuffer[3 + 6 * j]).toInt();
+                y = QString(tempBuffer[5 + 6 * j]).toInt();
+                switch (i)
+                {
+                case 0:
+                    this->cheeseTable[9 - y][x] = new Cheese(CheeseColor::black, CheeseKind::shuai, 9 - y, x);
+                    break;
+                case 1:
+                    this->cheeseTable[9 - y][x] = new Cheese(CheeseColor::black, CheeseKind::shi, 9 - y, x);
+                    break;
+                case 2:
+                    this->cheeseTable[9 - y][x] = new Cheese(CheeseColor::black, CheeseKind::xiang, 9 - y, x);
+                    break;
+                case 3:
+                    this->cheeseTable[9 - y][x] = new Cheese(CheeseColor::black, CheeseKind::ma, 9 - y, x);
+                    break;
+                case 4:
+                    this->cheeseTable[9 - y][x] = new Cheese(CheeseColor::black, CheeseKind::che, 9 - y, x);
+                    break;
+                case 5:
+                    this->cheeseTable[9 - y][x] = new Cheese(CheeseColor::black, CheeseKind::pao, 9 - y, x);
+                    break;
+                case 6:
+                    this->cheeseTable[9 - y][x] = new Cheese(CheeseColor::black, CheeseKind::bing, 9 - y, x);
+                    break;
+                }
+            }
+        }
+
+        in.readLine(); // waste
+        for (int i = 7; i < 14; ++i)
+        {
+            QString tempBuffer = in.readLine();
+            int cheeseNumber = QString(tempBuffer[0]).toInt();
+            int x, y;
+            for (int j = 0; j < cheeseNumber; ++j)
+            {
+                x = QString(tempBuffer[3 + 6 * j]).toInt();
+                y = QString(tempBuffer[5 + 6 * j]).toInt();
+                switch (i)
+                {
+                case 7:
+                    this->cheeseTable[9 - y][x] = new Cheese(CheeseColor::red, CheeseKind::shuai, 9 - y, x);
+                    break;
+                case 8:
+                    this->cheeseTable[9 - y][x] = new Cheese(CheeseColor::red, CheeseKind::shi, 9 - y, x);
+                    break;
+                case 9:
+                    this->cheeseTable[9 - y][x] = new Cheese(CheeseColor::red, CheeseKind::xiang, 9 - y, x);
+                    break;
+                case 10:
+                    this->cheeseTable[9 - y][x] = new Cheese(CheeseColor::red, CheeseKind::ma, 9 - y, x);
+                    break;
+                case 11:
+                    this->cheeseTable[9 - y][x] = new Cheese(CheeseColor::red, CheeseKind::che, 9 - y, x);
+                    break;
+                case 12:
+                    this->cheeseTable[9 - y][x] = new Cheese(CheeseColor::red, CheeseKind::pao, 9 - y, x);
+                    break;
+                case 13:
+                    this->cheeseTable[9 - y][x] = new Cheese(CheeseColor::red, CheeseKind::bing, 9 - y, x);
+                    break;
+                }
+            }
+        }
+    }
+
+    file.close();
+
+    // set mode
+    QStringList modes;
+    modes << tr("单人模式") << tr("单机对战模式") << tr("联机对战模式");
+    bool ok;
+    this->mode = QInputDialog::getItem(nullptr, tr("对战模式"), tr("选择对战模式"), modes, 1, false, &ok);
+    if (!ok)
+        return;
+
+    // set network
+    if (this->mode == tr("单机对战模式"))
+    {
+        this->mode = tr("对战模式");
+        ModeDialog dialog;
+        dialog.ui->spinBox_2->setValue(127);
+        dialog.ui->spinBox_2->setReadOnly(true);
+        dialog.ui->spinBox_3->setValue(0);
+        dialog.ui->spinBox_3->setReadOnly(true);
+        dialog.ui->spinBox_4->setValue(0);
+        dialog.ui->spinBox_4->setReadOnly(true);
+        dialog.ui->spinBox_5->setValue(1);
+        dialog.ui->spinBox_5->setReadOnly(true);
+        if (dialog.exec() == QDialog::Accepted)
+        {
+            this->connection = new CheeseTcpConnection();
+            bool success = this->connection->initTcpServer(static_cast<uint16_t>(dialog.ui->spinBox->value()));
+            if (!success)
+            {
+                delete this->connection;
+                this->connection = nullptr;
+                return;
+            }
+            this->connectToConnection();
+        }
+        else
+            return;
+    }
+    else if (this->mode == tr("联机对战模式"))
+    {
+        this->mode = tr("对战模式");
+        QString address;
+        for (QHostAddress add : QNetworkInterface::allAddresses())
+            if (add.protocol() == QAbstractSocket::IPv4Protocol)
+                address = add.toString();
+        QStringList addressParts = address.split('.');
+
+        ModeDialog dialog;
+        dialog.ui->spinBox_2->setValue(addressParts[0].toInt());
+        dialog.ui->spinBox_2->setReadOnly(true);
+        dialog.ui->spinBox_3->setValue(addressParts[1].toInt());
+        dialog.ui->spinBox_3->setReadOnly(true);
+        dialog.ui->spinBox_4->setValue(addressParts[2].toInt());
+        dialog.ui->spinBox_4->setReadOnly(true);
+        dialog.ui->spinBox_5->setValue(addressParts[3].toInt());
+        dialog.ui->spinBox_5->setReadOnly(true);
+        if (dialog.exec() == QDialog::Accepted)
+        {
+            this->connection = new CheeseTcpConnection();
+            bool success = this->connection->initTcpServer(static_cast<uint16_t>(dialog.ui->spinBox->value()));
+            if (!success)
+            {
+                delete this->connection;
+                this->connection = nullptr;
+                return;
+            }
+            this->connectToConnection();
+        }
+        else
+            return;
+    }
+
+    // set gaming
+    this->gaming = true;
+
+    // set color
+    this->myCheeseColor = CheeseColor::red;
+    if (colorString == "red")
+        this->currentStepColor = CheeseColor::red;
+    else
+        this->currentStepColor = CheeseColor::black;
+
+    emit modelChanged(this->cheeseTable, this->myCheeseColor);
+    emit readySend(this->cheeseTable, this->currentStepColor);
+    emit colorChanged(this->currentStepColor);
 }
 
 void CheeseModel::setJoinModel()
@@ -187,6 +448,199 @@ void CheeseModel::setJoinModel()
 
     // set color
     this->myCheeseColor = CheeseColor::black;
+}
+
+void CheeseModel::saveModel()
+{
+    QString fileName = QFileDialog::getSaveFileName(nullptr, tr("保存残局文件"), ".", tr("文本文件 (*.txt)"));
+    if (fileName.isEmpty())
+        return;
+    QFile file(fileName);
+    if (!file.open(QFile::WriteOnly | QFile::Text))
+    {
+        QMessageBox::warning(nullptr, "Error", "Cannot save file: " + file.errorString());
+        return;
+    }
+
+    std::array<std::vector<CheesePoint>, 14> fileTemplate;
+    // coodinate transform & cheesKind order transform
+    switch (this->currentStepColor)
+    {
+    case CheeseColor::red: // 红方先手
+        for (int i = 0; i < 10; ++i)
+            for (int j = 0; j < 9; ++j)
+            {
+                if (this->cheeseTable[i][j] == nullptr)
+                    continue;
+                switch (this->cheeseTable[i][j]->color)
+                {
+                case CheeseColor::red:
+                    switch (this->cheeseTable[i][j]->kind)
+                    {
+                    case CheeseKind::shuai:
+                        fileTemplate[0].push_back(CheesePoint(j, 9 - i));
+                        break;
+                    case CheeseKind::shi:
+                        fileTemplate[1].push_back(CheesePoint(j, 9 - i));
+                        break;
+                    case CheeseKind::xiang:
+                        fileTemplate[2].push_back(CheesePoint(j, 9 - i));
+                        break;
+                    case CheeseKind::ma:
+                        fileTemplate[3].push_back(CheesePoint(j, 9 - i));
+                        break;
+                    case CheeseKind::che:
+                        fileTemplate[4].push_back(CheesePoint(j, 9 - i));
+                        break;
+                    case CheeseKind::pao:
+                        fileTemplate[5].push_back(CheesePoint(j, 9 - i));
+                        break;
+                    case CheeseKind::bing:
+                        fileTemplate[6].push_back(CheesePoint(j, 9 - i));
+                        break;
+                    }
+                    break;
+                case CheeseColor::black:
+                    switch (this->cheeseTable[i][j]->kind)
+                    {
+                    case CheeseKind::shuai:
+                        fileTemplate[7].push_back(CheesePoint(j, 9 - i));
+                        break;
+                    case CheeseKind::shi:
+                        fileTemplate[8].push_back(CheesePoint(j, 9 - i));
+                        break;
+                    case CheeseKind::xiang:
+                        fileTemplate[9].push_back(CheesePoint(j, 9 - i));
+                        break;
+                    case CheeseKind::ma:
+                        fileTemplate[10].push_back(CheesePoint(j, 9 - i));
+                        break;
+                    case CheeseKind::che:
+                        fileTemplate[11].push_back(CheesePoint(j, 9 - i));
+                        break;
+                    case CheeseKind::pao:
+                        fileTemplate[12].push_back(CheesePoint(j, 9 - i));
+                        break;
+                    case CheeseKind::bing:
+                        fileTemplate[13].push_back(CheesePoint(j, 9 - i));
+                        break;
+                    }
+                    break;
+                }
+            }
+        break;
+    case CheeseColor::black: // 黑方先手
+        for (int i = 0; i < 10; ++i)
+            for (int j = 0; j < 9; ++j)
+            {
+                if (this->cheeseTable[i][j] == nullptr)
+                    continue;
+                switch (this->cheeseTable[i][j]->color)
+                {
+                case CheeseColor::red:
+                    switch (this->cheeseTable[i][j]->kind)
+                    {
+                    case CheeseKind::shuai:
+                        fileTemplate[7].push_back(CheesePoint(j, 9 - i));
+                        break;
+                    case CheeseKind::shi:
+                        fileTemplate[8].push_back(CheesePoint(j, 9 - i));
+                        break;
+                    case CheeseKind::xiang:
+                        fileTemplate[9].push_back(CheesePoint(j, 9 - i));
+                        break;
+                    case CheeseKind::ma:
+                        fileTemplate[10].push_back(CheesePoint(j, 9 - i));
+                        break;
+                    case CheeseKind::che:
+                        fileTemplate[11].push_back(CheesePoint(j, 9 - i));
+                        break;
+                    case CheeseKind::pao:
+                        fileTemplate[12].push_back(CheesePoint(j, 9 - i));
+                        break;
+                    case CheeseKind::bing:
+                        fileTemplate[13].push_back(CheesePoint(j, 9 - i));
+                        break;
+                    }
+                    break;
+                case CheeseColor::black:
+                    switch (this->cheeseTable[i][j]->kind)
+                    {
+                    case CheeseKind::shuai:
+                        fileTemplate[0].push_back(CheesePoint(j, 9 - i));
+                        break;
+                    case CheeseKind::shi:
+                        fileTemplate[1].push_back(CheesePoint(j, 9 - i));
+                        break;
+                    case CheeseKind::xiang:
+                        fileTemplate[2].push_back(CheesePoint(j, 9 - i));
+                        break;
+                    case CheeseKind::ma:
+                        fileTemplate[3].push_back(CheesePoint(j, 9 - i));
+                        break;
+                    case CheeseKind::che:
+                        fileTemplate[4].push_back(CheesePoint(j, 9 - i));
+                        break;
+                    case CheeseKind::pao:
+                        fileTemplate[5].push_back(CheesePoint(j, 9 - i));
+                        break;
+                    case CheeseKind::bing:
+                        fileTemplate[6].push_back(CheesePoint(j, 9 - i));
+                        break;
+                    }
+                    break;
+                }
+            }
+        break;
+    }
+
+    // save pieces file
+    QTextStream out(&file);
+    switch (this->currentStepColor)
+    {
+    case CheeseColor::red:
+        out << "red\n";
+        for (int i = 0; i < 7; ++i)
+        {
+            out << fileTemplate[i].size() << " ";
+            for (const auto &cheesePoint : fileTemplate[i])
+                out << "<" << cheesePoint.row << "," << cheesePoint.column << ">"
+                    << " ";
+            out << "\n";
+        }
+        out << "black\n";
+        for (int i = 7; i < 14; ++i)
+        {
+            out << fileTemplate[i].size() << " ";
+            for (const auto &cheesePoint : fileTemplate[i])
+                out << "<" << cheesePoint.row << "," << cheesePoint.column << ">"
+                    << " ";
+            out << "\n";
+        }
+        break;
+    case CheeseColor::black:
+        out << "black\n";
+        for (int i = 0; i < 7; ++i)
+        {
+            out << fileTemplate[i].size() << " ";
+            for (const auto &cheesePoint : fileTemplate[i])
+                out << "<" << cheesePoint.row << "," << cheesePoint.column << ">"
+                    << " ";
+            out << "\n";
+        }
+        out << "red\n";
+        for (int i = 7; i < 14; ++i)
+        {
+            out << fileTemplate[i].size() << " ";
+            for (const auto &cheesePoint : fileTemplate[i])
+                out << "<" << cheesePoint.row << "," << cheesePoint.column << ">"
+                    << " ";
+            out << "\n";
+        }
+        break;
+    }
+
+    file.close();
 }
 
 void CheeseModel::receiveMousePress(CheesePoint cheesePoint)
