@@ -20,6 +20,7 @@ signals:
   void modelChanged(const std::array<std::array<Cheese *, 9>, 10> &changedCheese, CheeseColor myColor); // start model
   void modelChanged(CheesePoint startCheesePoint, CheesePoint endCheesePoint);                          // change model
   void colorChanged(CheeseColor nextStepColor);
+  void gameEnded();
   void readySend(const std::array<std::array<Cheese *, 9>, 10> &changedCheese, CheeseColor currentColor);
   void readySend(CheesePoint startCheesePoint, CheesePoint endCheesePoint);
   void readySend(CheeseColor winColor);
@@ -29,6 +30,7 @@ public slots:
   void setPiecesModel();
   void setJoinModel();
   void saveModel();
+  void setLoseGame();
   void setEndGame();
   void receiveMousePress(CheesePoint cheesePoint);
   void receiveMousePress(); // clear chosen point

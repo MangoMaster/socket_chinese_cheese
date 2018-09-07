@@ -9,6 +9,9 @@ class CheeseView : public QGraphicsView
 
 public:
   CheeseView(QWidget *parent = nullptr);
+
+public slots:
+  void setScalePercent(int percent);
 };
 
 #endif // CHEESE_VIEW_H_

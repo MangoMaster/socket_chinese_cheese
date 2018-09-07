@@ -116,7 +116,12 @@ void CheeseModel::setNewModel()
     this->blackShuaiPoint = CheesePoint(0, 4);
 
     // set cheese
-
+    for (auto &cheeseArray : this->cheeseTable)
+        for (auto &cheese : cheeseArray)
+        {
+            delete cheese;
+            cheese = nullptr;
+        }
     // black
     cheeseTable[0][0] = new Cheese(CheeseColor::black, CheeseKind::che, 0, 0);
     cheeseTable[0][1] = new Cheese(CheeseColor::black, CheeseKind::ma, 0, 1);
@@ -161,6 +166,13 @@ void CheeseModel::setNewModel()
 void CheeseModel::setPiecesModel()
 {
     // set cheese
+    for (auto &cheeseArray : this->cheeseTable)
+        for (auto &cheese : cheeseArray)
+        {
+            delete cheese;
+            cheese = nullptr;
+        }
+
     QString fileName = QFileDialog::getOpenFileName(nullptr, tr("打开残局文件"), ".", tr("文本文件 (*.txt)"));
     if (fileName.isEmpty())
         return;
@@ -644,7 +656,7 @@ void CheeseModel::saveModel()
     file.close();
 }
 
-void CheeseModel::setEndGame()
+void CheeseModel::setLoseGame()
 {
     if (!this->gaming)
         return;
@@ -652,11 +664,9 @@ void CheeseModel::setEndGame()
         switch (this->currentStepColor)
         {
         case CheeseColor::red:
-            emit readySend(CheeseColor::black);
             this->endGame(CheeseColor::black);
             break;
         case CheeseColor::black:
-            emit readySend(CheeseColor::red);
             this->endGame(CheeseColor::red);
             break;
         }
@@ -672,6 +682,36 @@ void CheeseModel::setEndGame()
             this->endGame(CheeseColor::red);
             break;
         }
+}
+
+void CheeseModel::setEndGame()
+{
+    if (!this->gaming)
+        return;
+
+    if (this->mode == "单人模式")
+        switch (this->currentStepColor)
+        {
+        case CheeseColor::red:
+            break;
+        case CheeseColor::black:
+            break;
+        }
+    else // 多人模式
+    {
+        if (this->myCheeseColor == this->currentStepColor)
+            switch (this->myCheeseColor)
+            {
+            case CheeseColor::red:
+                emit readySend(CheeseColor::black);
+                this->endGame(CheeseColor::black);
+                break;
+            case CheeseColor::black:
+                emit readySend(CheeseColor::red);
+                this->endGame(CheeseColor::red);
+                break;
+            }
+    }
 }
 
 void CheeseModel::receiveMousePress(CheesePoint cheesePoint)
@@ -1161,6 +1201,8 @@ void CheeseModel::endGame(CheeseColor winColor)
     // set shuai point
     this->redShuaiPoint = CheesePoint();
     this->blackShuaiPoint = CheesePoint();
+
+    emit gameEnded();
 }
 
 void CheeseModel::connectToConnection()

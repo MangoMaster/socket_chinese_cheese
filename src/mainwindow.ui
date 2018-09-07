@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>800</width>
-    <height>600</height>
+    <width>950</width>
+    <height>1000</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -31,12 +31,43 @@
        </spacer>
       </item>
       <item>
-       <widget class="QLCDNumber" name="lcdNumber"/>
+       <widget class="QLabel" name="label">
+        <property name="text">
+         <string>Time Remain</string>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <widget class="QLCDNumber" name="lcdNumber">
+        <property name="digitCount">
+         <number>3</number>
+        </property>
+       </widget>
       </item>
       <item>
        <widget class="QPushButton" name="pushButton">
         <property name="text">
          <string>认输</string>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <spacer name="verticalSpacer_2">
+        <property name="orientation">
+         <enum>Qt::Vertical</enum>
+        </property>
+        <property name="sizeHint" stdset="0">
+         <size>
+          <width>20</width>
+          <height>40</height>
+         </size>
+        </property>
+       </spacer>
+      </item>
+      <item>
+       <widget class="QLabel" name="label_2">
+        <property name="text">
+         <string>TextLabel</string>
         </property>
        </widget>
       </item>
@@ -47,8 +78,20 @@
     </item>
     <item>
      <widget class="QSlider" name="verticalSlider">
+      <property name="minimum">
+       <number>20</number>
+      </property>
+      <property name="maximum">
+       <number>180</number>
+      </property>
+      <property name="value">
+       <number>100</number>
+      </property>
       <property name="orientation">
        <enum>Qt::Vertical</enum>
+      </property>
+      <property name="tickPosition">
+       <enum>QSlider::TicksAbove</enum>
       </property>
      </widget>
     </item>
@@ -59,7 +102,7 @@
     <rect>
      <x>0</x>
      <y>0</y>
-     <width>800</width>
+     <width>950</width>
      <height>39</height>
     </rect>
    </property>
@@ -137,10 +180,30 @@
    <class>CheeseView</class>
    <extends>QGraphicsView</extends>
    <header>cheeseview.h</header>
+   <slots>
+    <slot>setScalePercent(int)</slot>
+   </slots>
   </customwidget>
  </customwidgets>
  <resources>
   <include location="mainwindow.qrc"/>
  </resources>
- <connections/>
+ <connections>
+  <connection>
+   <sender>verticalSlider</sender>
+   <signal>valueChanged(int)</signal>
+   <receiver>graphicsView</receiver>
+   <slot>setScalePercent(int)</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>931</x>
+     <y>427</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>840</x>
+     <y>427</y>
+    </hint>
+   </hints>
+  </connection>
+ </connections>
 </ui>
