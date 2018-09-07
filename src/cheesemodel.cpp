@@ -111,6 +111,10 @@ void CheeseModel::setNewModel()
     this->myCheeseColor = CheeseColor::red;
     this->currentStepColor = CheeseColor::red;
 
+    // set shuai point
+    this->redShuaiPoint = CheesePoint(9, 4);
+    this->blackShuaiPoint = CheesePoint(0, 4);
+
     // set cheese
     for (auto &cheeseArray : this->cheeseTable)
         for (auto &cheese : cheeseArray)
@@ -192,6 +196,7 @@ void CheeseModel::setPiecesModel()
                 {
                 case 0:
                     this->cheeseTable[9 - y][x] = new Cheese(CheeseColor::red, CheeseKind::shuai, 9 - y, x);
+                    this->redShuaiPoint = CheesePoint(9 - y, x);
                     break;
                 case 1:
                     this->cheeseTable[9 - y][x] = new Cheese(CheeseColor::red, CheeseKind::shi, 9 - y, x);
@@ -229,6 +234,7 @@ void CheeseModel::setPiecesModel()
                 {
                 case 7:
                     this->cheeseTable[9 - y][x] = new Cheese(CheeseColor::black, CheeseKind::shuai, 9 - y, x);
+                    this->blackShuaiPoint = CheesePoint(9 - y, x);
                     break;
                 case 8:
                     this->cheeseTable[9 - y][x] = new Cheese(CheeseColor::black, CheeseKind::shi, 9 - y, x);
@@ -267,6 +273,7 @@ void CheeseModel::setPiecesModel()
                 {
                 case 0:
                     this->cheeseTable[9 - y][x] = new Cheese(CheeseColor::black, CheeseKind::shuai, 9 - y, x);
+                    this->blackShuaiPoint = CheesePoint(9 - y, x);
                     break;
                 case 1:
                     this->cheeseTable[9 - y][x] = new Cheese(CheeseColor::black, CheeseKind::shi, 9 - y, x);
@@ -304,6 +311,7 @@ void CheeseModel::setPiecesModel()
                 {
                 case 7:
                     this->cheeseTable[9 - y][x] = new Cheese(CheeseColor::red, CheeseKind::shuai, 9 - y, x);
+                    this->redShuaiPoint = CheesePoint(9 - y, x);
                     break;
                 case 8:
                     this->cheeseTable[9 - y][x] = new Cheese(CheeseColor::red, CheeseKind::shi, 9 - y, x);
@@ -688,6 +696,24 @@ void CheeseModel::receiveRecv(std::array<std::array<Cheese *, 9>, 10> changedChe
 {
     this->cheeseTable = changedCheese;
     this->currentStepColor = currentColor;
+    for (int i = 0; i <= 2; ++i)
+        for (int j = 3; j <= 5; ++j)
+        {
+            if (changedCheese[i][j] == nullptr)
+                continue;
+            if (changedCheese[i][j]->kind == CheeseKind::shuai)
+                if (changedCheese[i][j]->color == CheeseColor::red)
+                    this->redShuaiPoint = CheesePoint(i, j);
+        }
+    for (int i = 7; i <= 9; ++i)
+        for (int j = 3; j <= 5; ++j)
+        {
+            if (changedCheese[i][j] == nullptr)
+                continue;
+            if (changedCheese[i][j]->kind == CheeseKind::shuai)
+                if (changedCheese[i][j]->color == CheeseColor::red)
+                    this->redShuaiPoint = CheesePoint(i, j);
+        }
     emit modelChanged(this->cheeseTable, this->myCheeseColor);
     emit colorChanged(this->currentStepColor);
 }
@@ -903,7 +929,6 @@ void CheeseModel::chooseCheeseNextPoint(const CheesePoint &cheesePoint)
             break;
         }
         break;
-    // TODO: add shuai conflict
     case CheeseKind::shuai:
         switch (this->currentStepColor)
         {
@@ -916,6 +941,18 @@ void CheeseModel::chooseCheeseNextPoint(const CheesePoint &cheesePoint)
                     if (cheeseTable[newRow][newColumn] == nullptr || cheeseTable[newRow][newColumn]->color != this->currentStepColor) // Can go there
                         this->cheeseNextPoint.insert(CheesePoint(newRow, newColumn));
             }
+            if (column == this->blackShuaiPoint.column)
+            {
+                bool shuaiConflict = true;
+                for (int i = this->blackShuaiPoint.row + 1; i < row; ++i)
+                    if (this->cheeseTable[i][column] != nullptr)
+                    {
+                        shuaiConflict = false;
+                        break;
+                    }
+                if (shuaiConflict)
+                    this->cheeseNextPoint.insert(this->blackShuaiPoint);
+            }
             break;
         case CheeseColor::black:
             for (int i = 0; i < 4; ++i)
@@ -925,6 +962,18 @@ void CheeseModel::chooseCheeseNextPoint(const CheesePoint &cheesePoint)
                 if (newRow >= 0 && newRow <= 2 && newColumn >= 3 && newColumn <= 5)                                                   // inside black shuai border
                     if (cheeseTable[newRow][newColumn] == nullptr || cheeseTable[newRow][newColumn]->color != this->currentStepColor) // Can go there
                         this->cheeseNextPoint.insert(CheesePoint(newRow, newColumn));
+            }
+            if (column == this->redShuaiPoint.column)
+            {
+                bool shuaiConflict = true;
+                for (int i = row + 1; i < this->redShuaiPoint.row; ++i)
+                    if (this->cheeseTable[i][column] != nullptr)
+                    {
+                        shuaiConflict = false;
+                        break;
+                    }
+                if (shuaiConflict)
+                    this->cheeseNextPoint.insert(this->redShuaiPoint);
             }
             break;
         }
@@ -977,10 +1026,45 @@ void CheeseModel::chooseCheeseNextPoint(const CheesePoint &cheesePoint)
 
 void CheeseModel::goCheese(CheesePoint startCheesePoint, CheesePoint endCheesePoint)
 {
+    // specific: shuai
+    // go shuai
+    if (this->cheeseTable[startCheesePoint.row][startCheesePoint.column]->kind == CheeseKind::shuai)
+        switch (this->cheeseTable[startCheesePoint.row][startCheesePoint.column]->color)
+        {
+        case CheeseColor::red:
+            this->redShuaiPoint = endCheesePoint;
+            break;
+        case CheeseColor::black:
+            this->blackShuaiPoint = endCheesePoint;
+            break;
+        }
+
+    // eat shuai
+    bool end = false;
+    CheeseColor winColor;
+    if (this->cheeseTable[endCheesePoint.row][endCheesePoint.column] != nullptr)
+        if (this->cheeseTable[endCheesePoint.row][endCheesePoint.column]->kind == CheeseKind::shuai)
+        {
+            end = true;
+            switch (this->cheeseTable[endCheesePoint.row][endCheesePoint.column]->color)
+            {
+            case CheeseColor::red:
+                winColor = CheeseColor::black;
+                break;
+            case CheeseColor::black:
+                winColor = CheeseColor::red;
+                break;
+            }
+        }
+
+    // go
     delete cheeseTable[endCheesePoint.row][endCheesePoint.column];
     cheeseTable[endCheesePoint.row][endCheesePoint.column] = cheeseTable[startCheesePoint.row][startCheesePoint.column];
     cheeseTable[startCheesePoint.row][startCheesePoint.column] = nullptr;
     emit modelChanged(startCheesePoint, endCheesePoint);
+
+    if (end)
+        emit gameEnded(winColor);
 }
 
 void CheeseModel::enterNextStep()

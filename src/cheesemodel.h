@@ -22,6 +22,7 @@ signals:
   void readySend(const std::array<std::array<Cheese *, 9>, 10> &changedCheese, CheeseColor currentColor);
   void readySend(CheesePoint startCheesePoint, CheesePoint endCheesePoint);
   void colorChanged(CheeseColor nextStepColor);
+  void gameEnded(CheeseColor winColor);
 
 public slots:
   void setNewModel();
@@ -38,6 +39,8 @@ private:
   QString mode;        // 游戏模式
   CheeseColor myCheeseColor;
   CheeseColor currentStepColor;
+  CheesePoint redShuaiPoint;
+  CheesePoint blackShuaiPoint;
   std::array<std::array<Cheese *, 9>, 10> cheeseTable;
   CheesePoint cheeseChosenPoint; // -1 -> not exist
   QSet<CheesePoint> cheeseNextPoint;

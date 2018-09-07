@@ -40,7 +40,7 @@ bool CheeseTcpConnection::initTcpServer(uint16_t port)
         QMessageBox::warning(nullptr, "Error", "Waiting time out.");
         return false;
     }
-    QMessageBox::information(nullptr, "Info", "Connection succeed.");
+    // QMessageBox::information(nullptr, "Info", "Connection succeed.");
     return true;
 }
 
@@ -66,7 +66,7 @@ bool CheeseTcpConnection::initTcpClient(const QString &serverAddress, uint16_t p
         QMessageBox::warning(nullptr, "Error", "Waiting time out.");
         return false;
     }
-    QMessageBox::information(nullptr, "Info", "Connection succeed.");
+    // QMessageBox::information(nullptr, "Info", "Connection succeed.");
     return true;
 }
 

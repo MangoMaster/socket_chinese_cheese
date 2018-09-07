@@ -3,6 +3,7 @@
 
 struct CheesePoint
 {
+    CheesePoint() {}
     CheesePoint(int row, int column)
         : row(row), column(column) {}
     int row;
