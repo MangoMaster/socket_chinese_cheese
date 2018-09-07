@@ -1187,7 +1187,6 @@ void CheeseModel::checkJiangJun()
                         jiangJun = true;
         break;
     }
-    qDebug() << "???";
 
     if (jiangJun) // sound
         jiangJunPlayer->play();
@@ -1377,7 +1376,9 @@ bool CheeseModel::checkGoable(const CheesePoint &startCheesePoint, const CheeseP
                 for (int j = startColumn + 1; j < endColumn; ++j)
                     if (cheeseTable[startRow][j] != nullptr)
                         ++barrier;
-                if (barrier == 0 || barrier == 1)
+                if (barrier == 0 && cheeseTable[endRow][endColumn] == nullptr)
+                    return true;
+                else if (barrier == 1)
                     return true;
                 else
                     return false;
@@ -1388,7 +1389,9 @@ bool CheeseModel::checkGoable(const CheesePoint &startCheesePoint, const CheeseP
                 for (int j = endColumn + 1; j < startColumn; ++j)
                     if (cheeseTable[startRow][j] != nullptr)
                         ++barrier;
-                if (barrier == 0 || barrier == 1)
+                if (barrier == 0 && cheeseTable[endRow][endColumn] == nullptr)
+                    return true;
+                else if (barrier == 1)
                     return true;
                 else
                     return false;
@@ -1402,7 +1405,9 @@ bool CheeseModel::checkGoable(const CheesePoint &startCheesePoint, const CheeseP
                 for (int i = startRow + 1; i < endRow; ++i)
                     if (cheeseTable[i][startColumn] != nullptr)
                         ++barrier;
-                if (barrier == 0 || barrier == 1)
+                if (barrier == 0 && cheeseTable[endRow][endColumn] == nullptr)
+                    return true;
+                else if (barrier == 1)
                     return true;
                 else
                     return false;
@@ -1413,7 +1418,9 @@ bool CheeseModel::checkGoable(const CheesePoint &startCheesePoint, const CheeseP
                 for (int i = endRow + 1; i < startRow; ++i)
                     if (cheeseTable[i][startColumn] != nullptr)
                         ++barrier;
-                if (barrier == 0 || barrier == 1)
+                if (barrier == 0 && cheeseTable[endRow][endColumn] == nullptr)
+                    return true;
+                else if (barrier == 1)
                     return true;
                 else
                     return false;
