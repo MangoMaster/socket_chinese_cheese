@@ -31,6 +31,7 @@ protected:
 
 private:
   Ui::MainWindow *ui;
+  bool end = false;
   QTimer t;
   int time = 60;
 };

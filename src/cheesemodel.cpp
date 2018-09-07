@@ -23,6 +23,10 @@ CheeseModel::CheeseModel(QObject *parent)
     for (auto &cheeseArray : this->cheeseTable)
         for (auto &cheese : cheeseArray)
             cheese = nullptr;
+
+    jiangJunPlayer = new QMediaPlayer(this);
+    jiangJunPlayer->setMedia(QUrl("file:///home/lizhi/Documents/CodeProject/network/chinese_cheese/sounds/jiangjun.mp3"));
+    jiangJunPlayer->setVolume(100);
 }
 
 CheeseModel::~CheeseModel()
@@ -30,6 +34,8 @@ CheeseModel::~CheeseModel()
     for (auto &cheeseArray : this->cheeseTable)
         for (auto &cheese : cheeseArray)
             delete cheese;
+
+    delete jiangJunPlayer;
 }
 
 void CheeseModel::setNewModel()
@@ -757,16 +763,21 @@ void CheeseModel::receiveMousePress() // clear chosen point
 
 void CheeseModel::receiveRecv(std::array<std::array<Cheese *, 9>, 10> changedCheese, CheeseColor currentColor)
 {
+    // set cheese
     this->cheeseTable = changedCheese;
+
+    // set color
     this->currentStepColor = currentColor;
+
+    // set shuai
     for (int i = 0; i <= 2; ++i)
         for (int j = 3; j <= 5; ++j)
         {
             if (changedCheese[i][j] == nullptr)
                 continue;
             if (changedCheese[i][j]->kind == CheeseKind::shuai)
-                if (changedCheese[i][j]->color == CheeseColor::red)
-                    this->redShuaiPoint = CheesePoint(i, j);
+                if (changedCheese[i][j]->color == CheeseColor::black)
+                    this->blackShuaiPoint = CheesePoint(i, j);
         }
     for (int i = 7; i <= 9; ++i)
         for (int j = 3; j <= 5; ++j)
@@ -1050,11 +1061,11 @@ void CheeseModel::chooseCheeseNextPoint(const CheesePoint &cheesePoint)
         switch (this->currentStepColor)
         {
         case CheeseColor::red:
-            if (cheesePoint.row >= 5) // 未过河
+            if (row >= 5) // 未过河
             {
-                int newRow = cheesePoint.row - 1;
-                if (cheeseTable[newRow][cheesePoint.column] == nullptr || cheeseTable[newRow][cheesePoint.column]->color != this->currentStepColor) // Can go there
-                    this->cheeseNextPoint.insert(CheesePoint(newRow, cheesePoint.column));
+                int newRow = row - 1;
+                if (cheeseTable[newRow][column] == nullptr || cheeseTable[newRow][column]->color != this->currentStepColor) // Can go there
+                    this->cheeseNextPoint.insert(CheesePoint(newRow, column));
             }
             else // 已过河
             {
@@ -1069,11 +1080,11 @@ void CheeseModel::chooseCheeseNextPoint(const CheesePoint &cheesePoint)
             }
             break;
         case CheeseColor::black:
-            if (cheesePoint.row <= 4) // 未过河
+            if (row <= 4) // 未过河
             {
-                int newRow = cheesePoint.row + 1;
-                if (cheeseTable[newRow][cheesePoint.column] == nullptr || cheeseTable[newRow][cheesePoint.column]->color != this->currentStepColor) // Can go there
-                    this->cheeseNextPoint.insert(CheesePoint(newRow, cheesePoint.column));
+                int newRow = row + 1;
+                if (cheeseTable[newRow][column] == nullptr || cheeseTable[newRow][column]->color != this->currentStepColor) // Can go there
+                    this->cheeseNextPoint.insert(CheesePoint(newRow, column));
             }
             else // 已过河
             {
@@ -1131,6 +1142,10 @@ void CheeseModel::goCheese(CheesePoint startCheesePoint, CheesePoint endCheesePo
     cheeseTable[startCheesePoint.row][startCheesePoint.column] = nullptr;
     emit modelChanged(startCheesePoint, endCheesePoint);
 
+    // going to eat shuai
+    this->checkJiangJun();
+
+    // game end
     if (end)
     {
         emit readySend(winColor);
@@ -1150,6 +1165,32 @@ void CheeseModel::enterNextStep()
         break;
     }
     emit colorChanged(this->currentStepColor);
+}
+
+void CheeseModel::checkJiangJun()
+{
+    bool jiangJun = false;
+    switch (this->currentStepColor)
+    {
+    case CheeseColor::red:
+        for (int i = 0; i < 10 && !jiangJun; ++i)
+            for (int j = 0; j < 9 && !jiangJun; ++j)
+                if (this->cheeseTable[i][j] != nullptr && this->cheeseTable[i][j]->color == CheeseColor::red)
+                    if (this->checkGoable(CheesePoint(i, j), this->blackShuaiPoint))
+                        jiangJun = true;
+        break;
+    case CheeseColor::black:
+        for (int i = 0; i < 10 && !jiangJun; ++i)
+            for (int j = 0; j < 9 && !jiangJun; ++j)
+                if (this->cheeseTable[i][j] != nullptr && this->cheeseTable[i][j]->color == CheeseColor::black)
+                    if (this->checkGoable(CheesePoint(i, j), this->redShuaiPoint))
+                        jiangJun = true;
+        break;
+    }
+    qDebug() << "???";
+
+    if (jiangJun) // sound
+        jiangJunPlayer->play();
 }
 
 void CheeseModel::endGame(CheeseColor winColor)
@@ -1216,4 +1257,390 @@ void CheeseModel::connectToConnection()
                      this, SLOT(receiveRecv(std::array<std::array<Cheese *, 9>, 10>, CheeseColor)));
     QObject::connect(this->connection, SIGNAL(recvChanged(CheesePoint, CheesePoint)), this, SLOT(receiveRecv(CheesePoint, CheesePoint)));
     QObject::connect(this->connection, SIGNAL(recvChanged(CheeseColor)), this, SLOT(receiveRecv(CheeseColor)));
+}
+
+bool CheeseModel::checkGoable(const CheesePoint &startCheesePoint, const CheesePoint &endCheesePoint)
+{
+    int startRow = startCheesePoint.row;
+    int startColumn = startCheesePoint.column;
+    int endRow = endCheesePoint.row;
+    int endColumn = endCheesePoint.column;
+    int deltaRow = endRow - startRow;
+    int deltaColumn = endColumn - startColumn;
+
+    if (cheeseTable[endRow][endColumn] != nullptr && cheeseTable[endRow][endColumn]->color == this->currentStepColor) // Cannot eat cheese in the way
+        return false;
+
+    switch (cheeseTable[startRow][startColumn]->kind)
+    {
+    case CheeseKind::che:
+        if (deltaRow == 0)
+            if (deltaColumn > 0)
+            {
+                for (int j = startColumn + 1; j < endColumn; ++j)
+                    if (cheeseTable[startRow][j] != nullptr)
+                        return false;
+            }
+            else if (deltaColumn < 0)
+            {
+                for (int j = endColumn + 1; j < startColumn; ++j)
+                    if (cheeseTable[startRow][j] != nullptr)
+                        return false;
+                return true;
+            }
+            else
+                return false;
+        else if (deltaColumn == 0)
+            if (deltaRow > 0)
+            {
+                for (int i = startRow + 1; i < endRow; ++i)
+                    if (cheeseTable[i][startColumn] != nullptr)
+                        return false;
+                return true;
+            }
+            else if (deltaRow < 0)
+            {
+                for (int i = endRow + 1; i < startRow; ++i)
+                    if (cheeseTable[i][startColumn] != nullptr)
+                        return false;
+                return true;
+            }
+            else
+                return false;
+        else
+            return false;
+        break;
+    case CheeseKind::ma:
+        switch (deltaRow)
+        {
+        case 2:
+            switch (deltaColumn)
+            {
+            case 1:
+            case -1:
+                if (cheeseTable[startRow + 1][startColumn] == nullptr) // 不别马腿
+                    return true;
+                else
+                    return false;
+                break;
+            default:
+                return false;
+                break;
+            }
+            break;
+        case -2:
+            switch (deltaColumn)
+            {
+            case 1:
+            case -1:
+                if (cheeseTable[startRow - 1][startColumn] == nullptr) // 不别马腿
+                    return true;
+                else
+                    return false;
+                break;
+            default:
+                return false;
+                break;
+            }
+            break;
+        case 1:
+        case -1:
+            switch (deltaColumn)
+            {
+            case 2:
+                if (cheeseTable[startRow][startColumn + 1] == nullptr) // 不别马腿
+                    return true;
+                else
+                    return false;
+                break;
+            case -2:
+                if (cheeseTable[startRow][startColumn - 1] == nullptr) // 不别马腿
+                    return true;
+                else
+                    return false;
+                break;
+            default:
+                return false;
+                break;
+            }
+            break;
+        default:
+            return false;
+            break;
+        }
+        break;
+    case CheeseKind::pao:
+        if (deltaRow == 0)
+            if (deltaColumn > 0)
+            {
+                int barrier = 0;
+                for (int j = startColumn + 1; j < endColumn; ++j)
+                    if (cheeseTable[startRow][j] != nullptr)
+                        ++barrier;
+                if (barrier == 0 || barrier == 1)
+                    return true;
+                else
+                    return false;
+            }
+            else if (deltaColumn < 0)
+            {
+                int barrier = 0;
+                for (int j = endColumn + 1; j < startColumn; ++j)
+                    if (cheeseTable[startRow][j] != nullptr)
+                        ++barrier;
+                if (barrier == 0 || barrier == 1)
+                    return true;
+                else
+                    return false;
+            }
+            else
+                return false;
+        else if (deltaColumn == 0)
+            if (deltaRow > 0)
+            {
+                int barrier = 0;
+                for (int i = startRow + 1; i < endRow; ++i)
+                    if (cheeseTable[i][startColumn] != nullptr)
+                        ++barrier;
+                if (barrier == 0 || barrier == 1)
+                    return true;
+                else
+                    return false;
+            }
+            else if (deltaRow < 0)
+            {
+                int barrier = 0;
+                for (int i = endRow + 1; i < startRow; ++i)
+                    if (cheeseTable[i][startColumn] != nullptr)
+                        ++barrier;
+                if (barrier == 0 || barrier == 1)
+                    return true;
+                else
+                    return false;
+            }
+            else
+                return false;
+        else
+            return false;
+        break;
+    case CheeseKind::xiang:
+        switch (this->currentStepColor)
+        {
+        case CheeseColor::red:
+            if (endRow <= 4) // outside red xiang border
+                return false;
+            break;
+        case CheeseColor::black:
+            if (endRow >= 5) // outside black xiang border
+                return false;
+            break;
+        }
+        switch (deltaRow)
+        {
+        case 2:
+            switch (deltaColumn)
+            {
+            case 2:
+                if (cheeseTable[startRow + 1][startColumn + 1] == nullptr) // 不塞象眼
+                    return true;
+                else
+                    return false;
+                break;
+            case -2:
+                if (cheeseTable[startRow + 1][startColumn - 1] == nullptr) // 不塞象眼
+                    return true;
+                else
+                    return false;
+                break;
+            default:
+                return false;
+                break;
+            }
+            break;
+        case -2:
+            switch (deltaColumn)
+            {
+            case 2:
+                if (cheeseTable[startRow - 1][startColumn + 1] == nullptr) // 不塞象眼
+                    return true;
+                else
+                    return false;
+                break;
+            case -2:
+                if (cheeseTable[startRow - 1][startColumn - 1] == nullptr) // 不塞象眼
+                    return true;
+                else
+                    return false;
+                break;
+            default:
+                return false;
+                break;
+            }
+            break;
+        default:
+            return false;
+            break;
+        }
+        break;
+    case CheeseKind::shi:
+        switch (this->currentStepColor)
+        {
+        case CheeseColor::red:
+            if (endRow <= 6 || endColumn <= 2 || endColumn >= 6) // outside red shi border
+                return false;
+            break;
+        case CheeseColor::black:
+            if (endRow >= 3 || endColumn <= 2 || endColumn >= 6) // outside black shi border
+                return false;
+            break;
+        }
+        switch (deltaRow)
+        {
+        case 1:
+        case -1:
+            switch (deltaColumn)
+            {
+            case 1:
+            case -1:
+                return true;
+                break;
+            default:
+                return false;
+                break;
+            }
+            break;
+        default:
+            return false;
+            break;
+        }
+        break;
+    case CheeseKind::shuai:
+        // no need to consider shuai conflict
+        switch (this->currentStepColor)
+        {
+        case CheeseColor::red:
+            if (endRow <= 6 || endColumn <= 2 || endColumn >= 6) // outside red shuai border
+                return false;
+            break;
+        case CheeseColor::black:
+            if (endRow >= 3 || endColumn <= 2 || endColumn >= 6) // outside black shuai border
+                return false;
+            break;
+        }
+        switch (deltaRow)
+        {
+        case 1:
+        case -1:
+            switch (deltaColumn)
+            {
+            case 0:
+                return true;
+                break;
+            default:
+                return false;
+                break;
+            }
+        case 0:
+            switch (deltaColumn)
+            {
+            case 1:
+            case -1:
+                return true;
+                break;
+            default:
+                return false;
+                break;
+            }
+        default:
+            return false;
+            break;
+        }
+        break;
+    case CheeseKind::bing:
+        switch (this->currentStepColor)
+        {
+        case CheeseColor::red:
+            if (startRow >= 5) // 未过河
+                if (deltaRow == -1 && deltaColumn == 0)
+                    return true;
+                else
+                    return false;
+            else // 已过河
+            {
+                switch (deltaRow)
+                {
+                case -1:
+                    switch (deltaColumn)
+                    {
+                    case 0:
+                        return true;
+                        break;
+                    default:
+                        return false;
+                        break;
+                    }
+                    break;
+                case 0:
+                    switch (deltaColumn)
+                    {
+                    case 1:
+                    case -1:
+                        return true;
+                        break;
+                    default:
+                        return false;
+                        break;
+                    }
+                    break;
+                default:
+                    return false;
+                    break;
+                }
+            }
+            break;
+        case CheeseColor::black:
+            if (startRow <= 4) // 未过河
+            {
+                if (deltaRow == 1 && deltaColumn == 0)
+                    return true;
+                else
+                    return false;
+            }
+            else // 已过河
+            {
+                switch (deltaRow)
+                {
+                case 1:
+                    switch (deltaColumn)
+                    {
+                    case 0:
+                        return true;
+                        break;
+                    default:
+                        return false;
+                        break;
+                    }
+                    break;
+                case 0:
+                    switch (deltaColumn)
+                    {
+                    case 1:
+                    case -1:
+                        return true;
+                        break;
+                    default:
+                        return false;
+                        break;
+                    }
+                    break;
+                default:
+                    return false;
+                    break;
+                }
+            }
+            break;
+        }
+        break;
+    }
+    return false;
 }

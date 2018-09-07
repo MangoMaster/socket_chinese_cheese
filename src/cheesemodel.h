@@ -5,6 +5,7 @@
 #include <QtCore/QSet>
 #include <QtNetwork/QTcpServer>
 #include <QtNetwork/QTcpSocket>
+#include <QtMultimedia/QMediaPlayer>
 #include "cheese.h"
 #include "cheesetcpconnection.h"
 
@@ -53,8 +54,10 @@ private:
   void clearChosenCheese();
   void chooseCheeseNextPoint(const CheesePoint &cheesePoint);
   void goCheese(CheesePoint startCheesePoint, CheesePoint endCheesePoint);
+  void checkJiangJun();
   void enterNextStep();
   void endGame(CheeseColor winColor);
+  bool checkGoable(const CheesePoint &startCheesePoint, const CheesePoint &endCheesePoint);
 
   static const CheesePoint MA_POINT_DELTA[8];
   static const CheesePoint MA_BIE_POINT_DELTA[8];
@@ -67,6 +70,8 @@ private:
 
   CheeseTcpConnection *connection = nullptr;
   void connectToConnection();
+
+  QMediaPlayer *jiangJunPlayer;
 };
 
 #endif // CHEESE_MODEL_H_

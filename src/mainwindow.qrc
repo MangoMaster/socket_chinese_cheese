@@ -16,4 +16,7 @@
     <file alias="red_shuai.png">../icons/red_shuai.png</file>
     <file alias="red_xiang.png">../icons/red_xiang.png</file>
   </qresource>
+  <qresource prefix="sounds">
+    <file>../sounds/jiangjun.mp3</file>
+  </qresource>
 </RCC>
