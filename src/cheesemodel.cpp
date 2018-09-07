@@ -820,7 +820,9 @@ void CheeseModel::chooseCheese(const CheesePoint &cheesePoint)
 {
     // Chose cheese at cheesePoint
     this->cheeseChosenPoint = cheesePoint;
+    this->cheeseNextPoint.clear();
     this->chooseCheeseNextPoint(cheesePoint);
+    emit nextPointChanged(this->cheeseNextPoint);
 }
 
 void CheeseModel::clearChosenCheese()
@@ -828,6 +830,7 @@ void CheeseModel::clearChosenCheese()
     // Clear chosen cheese
     this->cheeseChosenPoint.row = this->cheeseChosenPoint.column = -1;
     this->cheeseNextPoint.clear();
+    emit nextPointChanged(this->cheeseNextPoint);
 }
 
 void CheeseModel::chooseCheeseNextPoint(const CheesePoint &cheesePoint)

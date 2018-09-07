@@ -20,6 +20,7 @@ public:
 signals:
   void modelChanged(const std::array<std::array<Cheese *, 9>, 10> &changedCheese, CheeseColor myColor); // start model
   void modelChanged(CheesePoint startCheesePoint, CheesePoint endCheesePoint);                          // change model
+  void nextPointChanged(QSet<CheesePoint> nextPoints);
   void colorChanged(CheeseColor nextStepColor);
   void gameEnded();
   void readySend(const std::array<std::array<Cheese *, 9>, 10> &changedCheese, CheeseColor currentColor);

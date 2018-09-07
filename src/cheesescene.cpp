@@ -12,9 +12,15 @@ CheeseScene::CheeseScene(QObject *parent)
     for (int i = 0; i < 10; ++i)
         for (int j = 0; j < 9; ++j)
         {
+            // pixmap for icons
             this->cheesePixmapTable[i][j] = new CheesePixmap();
             this->cheesePixmapTable[i][j]->setOffset(80 * (j + 1) - 75 / 2, 80 * (i + 1) - 75 / 2);
             this->addItem(cheesePixmapTable[i][j]);
+
+            // rect for boundaries
+            this->rectTable[i][j] = new QGraphicsRectItem(80 * (j + 1) - 75 / 2, 80 * (i + 1) - 75 / 2, 75, 75);
+            this->rectTable[i][j]->setPen(Qt::NoPen);
+            this->addItem(rectTable[i][j]);
         }
 }
 
@@ -122,6 +128,32 @@ void CheeseScene::receiveModel(CheesePoint startCheesePoint, CheesePoint endChee
     case CheeseColor::black:
         cheesePixmapTable[9 - endCheesePoint.row][8 - endCheesePoint.column]->setPixmap(cheesePixmapTable[9 - startCheesePoint.row][8 - startCheesePoint.column]->pixmap());
         cheesePixmapTable[9 - startCheesePoint.row][8 - startCheesePoint.column]->setPixmap(QPixmap());
+        break;
+    }
+}
+
+void CheeseScene::receiveNextPoint(QSet<CheesePoint> nextPoint)
+{
+    QPen pen;
+    pen.setColor(Qt::red);
+    pen.setStyle(Qt::DashLine);
+    
+    // reverse scene
+    switch (this->myCheeseColor)
+    {
+    case CheeseColor::red:
+        for (const auto &cheesePoint : this->cheeseNextPoint)
+            this->rectTable[cheesePoint.row][cheesePoint.column]->setPen(Qt::NoPen);
+        for (const auto &cheesePoint : nextPoint)
+            this->rectTable[cheesePoint.row][cheesePoint.column]->setPen(pen);
+        this->cheeseNextPoint = nextPoint;
+        break;
+    case CheeseColor::black:
+        for (const auto &cheesePoint : this->cheeseNextPoint)
+            this->rectTable[9 - cheesePoint.row][8 - cheesePoint.column]->setPen(Qt::NoPen);
+        for (const auto &cheesePoint : nextPoint)
+            this->rectTable[9 - cheesePoint.row][8 - cheesePoint.column]->setPen(pen);
+        this->cheeseNextPoint = nextPoint;
         break;
     }
 }
