@@ -1240,6 +1240,7 @@ void CheeseModel::endGame(CheeseColor winColor)
 
     // set network
     delete this->connection;
+    this->connection = nullptr;
 
     // set gaming
     this->gaming = false;
@@ -1256,6 +1257,7 @@ void CheeseModel::endGame(CheeseColor winColor)
     this->redShuaiPoint = CheesePoint();
     this->blackShuaiPoint = CheesePoint();
 
+    emit modelChanged(this->cheeseTable, this->myCheeseColor);
     emit gameEnded();
 }
 
