@@ -3,6 +3,7 @@
 
 #include <QtWidgets/QMainWindow>
 #include <QtCore/QTimer>
+#include "cheese.h"
 
 namespace Ui
 {
@@ -26,6 +27,7 @@ public slots:
   void timerStop();
   void timerZero();
   void timerSingalTimeOut();
+  void setCurrentColor(CheeseColor currentColor);
 
 protected:
   void closeEvent(QCloseEvent *event) override;

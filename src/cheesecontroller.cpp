@@ -19,6 +19,7 @@ void CheeseController::control()
     QObject::connect(this->mainWindow->ui->action_Save, SIGNAL(triggered(bool)), this->model, SLOT(saveModel()));
     QObject::connect(this->mainWindow->ui->pushButton, SIGNAL(clicked()), this->model, SLOT(setLoseGame()));
     QObject::connect(this->mainWindow, SIGNAL(timerTimeout()), this->model, SLOT(setEndGame()));
+    QObject::connect(this->model, SIGNAL(colorChanged(CheeseColor)), this->mainWindow, SLOT(setCurrentColor(CheeseColor)));
     QObject::connect(this->model, SIGNAL(modelChanged(const std::array<std::array<Cheese *, 9>, 10> &, CheeseColor)),
                      this->mainWindow, SLOT(timerStart()));
     QObject::connect(this->model, SIGNAL(colorChanged(CheeseColor)), this->mainWindow, SLOT(timerZero()));

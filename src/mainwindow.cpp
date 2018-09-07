@@ -6,6 +6,7 @@ MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent), ui(new Ui::MainWindow)
 {
     ui->setupUi(this);
+    ui->label_2->setAlignment(Qt::AlignHCenter);
     QObject::connect(this->ui->action_Exit, SIGNAL(triggered(bool)), this, SLOT(close()));
     QObject::connect(&(this->t), SIGNAL(timeout()), this, SLOT(timerSingalTimeOut()));
 }
@@ -50,4 +51,17 @@ void MainWindow::closeEvent(QCloseEvent *event)
 {
     this->ui->pushButton->click();
     QMainWindow::closeEvent(event);
+}
+
+void MainWindow::setCurrentColor(CheeseColor currentColor)
+{
+    switch (currentColor)
+    {
+    case CheeseColor::red:
+        this->ui->label_2->setPixmap(QPixmap(":/icons/red_shuai.png"));
+        break;
+    case CheeseColor::black:
+        this->ui->label_2->setPixmap(QPixmap(":/icons/black_shuai.png"));
+        break;
+    }
 }
