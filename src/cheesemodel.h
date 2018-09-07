@@ -19,20 +19,22 @@ public:
 signals:
   void modelChanged(const std::array<std::array<Cheese *, 9>, 10> &changedCheese, CheeseColor myColor); // start model
   void modelChanged(CheesePoint startCheesePoint, CheesePoint endCheesePoint);                          // change model
+  void colorChanged(CheeseColor nextStepColor);
   void readySend(const std::array<std::array<Cheese *, 9>, 10> &changedCheese, CheeseColor currentColor);
   void readySend(CheesePoint startCheesePoint, CheesePoint endCheesePoint);
-  void colorChanged(CheeseColor nextStepColor);
-  void gameEnded(CheeseColor winColor);
+  void readySend(CheeseColor winColor);
 
 public slots:
   void setNewModel();
   void setPiecesModel();
   void setJoinModel();
   void saveModel();
+  void setEndGame();
   void receiveMousePress(CheesePoint cheesePoint);
   void receiveMousePress(); // clear chosen point
   void receiveRecv(std::array<std::array<Cheese *, 9>, 10> changedCheese, CheeseColor currentColor);
   void receiveRecv(CheesePoint startCheesePoint, CheesePoint endCheesePoint);
+  void receiveRecv(CheeseColor winColor);
 
 private:
   bool gaming = false; // 游戏中
@@ -50,6 +52,7 @@ private:
   void chooseCheeseNextPoint(const CheesePoint &cheesePoint);
   void goCheese(CheesePoint startCheesePoint, CheesePoint endCheesePoint);
   void enterNextStep();
+  void endGame(CheeseColor winColor);
 
   static const CheesePoint MA_POINT_DELTA[8];
   static const CheesePoint MA_BIE_POINT_DELTA[8];

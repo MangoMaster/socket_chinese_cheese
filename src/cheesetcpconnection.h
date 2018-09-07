@@ -21,10 +21,12 @@ public:
 signals:
   void recvChanged(std::array<std::array<Cheese *, 9>, 10> changedCheese, CheeseColor currentColor);
   void recvChanged(CheesePoint startCheesePoint, CheesePoint endCheesePoint);
+  void recvChanged(CheeseColor);
 
 public slots:
   void send(const std::array<std::array<Cheese *, 9>, 10> &changedCheese, CheeseColor currentColor);
   void send(CheesePoint startCheesePoint, CheesePoint endCheesePoint);
+  void send(CheeseColor winColor);
   void send(QByteArray byteArray);
 
 private slots:

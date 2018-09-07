@@ -116,9 +116,6 @@ void CheeseModel::setNewModel()
     this->blackShuaiPoint = CheesePoint(0, 4);
 
     // set cheese
-    for (auto &cheeseArray : this->cheeseTable)
-        for (auto &cheese : cheeseArray)
-            cheese = nullptr;
 
     // black
     cheeseTable[0][0] = new Cheese(CheeseColor::black, CheeseKind::che, 0, 0);
@@ -164,10 +161,6 @@ void CheeseModel::setNewModel()
 void CheeseModel::setPiecesModel()
 {
     // set cheese
-    for (auto &cheeseArray : this->cheeseTable)
-        for (auto &cheese : cheeseArray)
-            cheese = nullptr;
-
     QString fileName = QFileDialog::getOpenFileName(nullptr, tr("打开残局文件"), ".", tr("文本文件 (*.txt)"));
     if (fileName.isEmpty())
         return;
@@ -651,6 +644,36 @@ void CheeseModel::saveModel()
     file.close();
 }
 
+void CheeseModel::setEndGame()
+{
+    if (!this->gaming)
+        return;
+    if (this->mode == "单人模式")
+        switch (this->currentStepColor)
+        {
+        case CheeseColor::red:
+            emit readySend(CheeseColor::black);
+            this->endGame(CheeseColor::black);
+            break;
+        case CheeseColor::black:
+            emit readySend(CheeseColor::red);
+            this->endGame(CheeseColor::red);
+            break;
+        }
+    else // 多人模式
+        switch (this->myCheeseColor)
+        {
+        case CheeseColor::red:
+            emit readySend(CheeseColor::black);
+            this->endGame(CheeseColor::black);
+            break;
+        case CheeseColor::black:
+            emit readySend(CheeseColor::red);
+            this->endGame(CheeseColor::red);
+            break;
+        }
+}
+
 void CheeseModel::receiveMousePress(CheesePoint cheesePoint)
 {
     assert(cheesePoint.row >= 0 && cheesePoint.row <= 9 && cheesePoint.column >= 0 && cheesePoint.column <= 8);
@@ -724,6 +747,11 @@ void CheeseModel::receiveRecv(CheesePoint startCheesePoint, CheesePoint endChees
     this->goCheese(startCheesePoint, endCheesePoint);
     // next step
     this->enterNextStep();
+}
+
+void CheeseModel::receiveRecv(CheeseColor winColor)
+{
+    this->endGame(winColor);
 }
 
 void CheeseModel::chooseCheese(const CheesePoint &cheesePoint)
@@ -1064,7 +1092,10 @@ void CheeseModel::goCheese(CheesePoint startCheesePoint, CheesePoint endCheesePo
     emit modelChanged(startCheesePoint, endCheesePoint);
 
     if (end)
-        emit gameEnded(winColor);
+    {
+        emit readySend(winColor);
+        this->endGame(winColor);
+    }
 }
 
 void CheeseModel::enterNextStep()
@@ -1081,13 +1112,66 @@ void CheeseModel::enterNextStep()
     emit colorChanged(this->currentStepColor);
 }
 
+void CheeseModel::endGame(CheeseColor winColor)
+{
+    if (this->mode == "单人模式")
+        switch (winColor)
+        {
+        case CheeseColor::red:
+            QMessageBox::information(nullptr, "Game End", "Red Win!");
+            break;
+        case CheeseColor::black:
+            QMessageBox::information(nullptr, "Game End", "Black Win!");
+            break;
+        }
+    else // 多人模式
+        switch (winColor)
+        {
+        case CheeseColor::red:
+            if (winColor == this->myCheeseColor)
+                QMessageBox::information(nullptr, "Game End", "You Red Win!");
+            else
+                QMessageBox::information(nullptr, "Game End", "You Black Lose!");
+            break;
+        case CheeseColor::black:
+            if (winColor == this->myCheeseColor)
+                QMessageBox::information(nullptr, "Game End", "You Black Win!");
+            else
+                QMessageBox::information(nullptr, "Game End", "You Red Lose!");
+            break;
+        }
+
+    // set mode
+    this->mode = QString();
+
+    // set network
+    delete this->connection;
+
+    // set gaming
+    this->gaming = false;
+
+    // set cheese
+    for (auto &cheeseArray : this->cheeseTable)
+        for (auto &cheese : cheeseArray)
+        {
+            delete cheese;
+            cheese = nullptr;
+        }
+
+    // set shuai point
+    this->redShuaiPoint = CheesePoint();
+    this->blackShuaiPoint = CheesePoint();
+}
+
 void CheeseModel::connectToConnection()
 {
     // model & connection
     QObject::connect(this, SIGNAL(readySend(const std::array<std::array<Cheese *, 9>, 10> &, CheeseColor)),
                      this->connection, SLOT(send(const std::array<std::array<Cheese *, 9>, 10> &, CheeseColor)));
     QObject::connect(this, SIGNAL(readySend(CheesePoint, CheesePoint)), this->connection, SLOT(send(CheesePoint, CheesePoint)));
+    QObject::connect(this, SIGNAL(readySend(CheeseColor)), this->connection, SLOT(send(CheeseColor)));
     QObject::connect(this->connection, SIGNAL(recvChanged(std::array<std::array<Cheese *, 9>, 10>, CheeseColor)),
                      this, SLOT(receiveRecv(std::array<std::array<Cheese *, 9>, 10>, CheeseColor)));
     QObject::connect(this->connection, SIGNAL(recvChanged(CheesePoint, CheesePoint)), this, SLOT(receiveRecv(CheesePoint, CheesePoint)));
+    QObject::connect(this->connection, SIGNAL(recvChanged(CheeseColor)), this, SLOT(receiveRecv(CheeseColor)));
 }

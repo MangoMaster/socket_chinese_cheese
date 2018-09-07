@@ -10,8 +10,8 @@ CheeseTcpConnection::CheeseTcpConnection(QObject *parent)
 
 CheeseTcpConnection::~CheeseTcpConnection()
 {
-    delete server;
     delete socket;
+    delete server;
 }
 
 bool CheeseTcpConnection::initTcpServer(uint16_t port)
@@ -110,6 +110,14 @@ void CheeseTcpConnection::send(CheesePoint startCheesePoint, CheesePoint endChee
     this->send(byteArray);
 }
 
+void CheeseTcpConnection::send(CheeseColor winColor)
+{
+    QByteArray byteArray;
+    byteArray.append('q'); // quit
+    byteArray.append(static_cast<char>(winColor));
+    this->send(byteArray);
+}
+
 void CheeseTcpConnection::send(QByteArray byteArray)
 {
     this->socket->write(byteArray);
@@ -189,6 +197,21 @@ void CheeseTcpConnection::recv()
         CheesePoint startCheesePoint(static_cast<int>(byteArray[1]), static_cast<int>(byteArray[2]));
         CheesePoint endCheesePoint(static_cast<int>(byteArray[3]), static_cast<int>(byteArray[4]));
         emit recvChanged(startCheesePoint, endCheesePoint);
+    }
+    break;
+    case 'q': // quit
+    {
+        CheeseColor winColor;
+        switch (byteArray[1])
+        {
+        case static_cast<char>(CheeseColor::red):
+            winColor = CheeseColor::red;
+            break;
+        case static_cast<char>(CheeseColor::black):
+            winColor = CheeseColor::black;
+            break;
+        }
+        emit recvChanged(winColor);
     }
     break;
     }

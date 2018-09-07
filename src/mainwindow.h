@@ -3,7 +3,8 @@
 
 #include <QtWidgets/QMainWindow>
 
-namespace Ui {
+namespace Ui
+{
 class MainWindow;
 }
 
@@ -11,12 +12,12 @@ class MainWindow : public QMainWindow
 {
     Q_OBJECT
 
-public:
+  public:
     explicit MainWindow(QWidget *parent = nullptr);
     ~MainWindow();
     friend class CheeseController;
 
-private:
+  private:
     Ui::MainWindow *ui;
 };
 
